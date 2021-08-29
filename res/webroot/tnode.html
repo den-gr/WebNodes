@@ -14,12 +14,21 @@
             #led{
                 height: 20px;
                 width: 20px;
-                background-color: grey;
                 border-radius: 50%;
                 vertical-align: center;
                 margin-top: 15px;
                 margin-left: 10px;
             }
+
+            #led.led_on{
+                background-color: red;
+            }
+
+            #ledbox > div:not(.led_on){
+                background-color: grey;
+            }
+
+
             
             #ledbox{
                 display: flex;

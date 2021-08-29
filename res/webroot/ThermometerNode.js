@@ -1,4 +1,7 @@
+const LED_ON_CLASS = "led_on";
+
 class ThermometerNode{
+   
     
     constructor(id, x, y, webSocket){
         this.id = id;
@@ -34,7 +37,13 @@ class ThermometerNode{
     }
 
     turnOnLed(turnOn){
-        this.ledLabel.style.backgroundColor = turnOn ? "red" : "gray";
+       
+        //this.ledLabel.style.backgroundColor = turnOn ? "red" : "gray";
+        if(turnOn && !this.ledLabel.classList.contains(LED_ON_CLASS)){
+            this.ledLabel.classList.add(LED_ON_CLASS);
+        }else if(!turnOn && this.ledLabel.classList.contains(LED_ON_CLASS)){
+            this.ledLabel.classList.remove(LED_ON_CLASS);
+        }
     }
 
     getTemperature(){
@@ -60,7 +69,14 @@ class ThermometerNode{
     }
 
     notifyState(){
-        let obj = JSON.stringify({"type": "node_state","id": this.id, "temperature": this.temperature, "x": this.x, "y": this.y});
+        let obj = JSON.stringify(
+            {"type": "node_state",
+            "id": this.id, 
+            "temperature": this.temperature, 
+            "x": this.x, 
+            "y": this.y,
+            "led_on": this.ledLabel.classList.contains(LED_ON_CLASS)
+            });
         webSocket.send(obj);
     }
 
