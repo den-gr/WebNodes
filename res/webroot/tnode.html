@@ -6,8 +6,41 @@
         <link rel="shortcut icon" href="#">
         <script src="ThermometerNode.js"></script>
         <script src="thermometer_page_script.js"></script>
+        <style>
+            #node_container{
+                visibility: hidden;
+            }
+
+            #led{
+                height: 20px;
+                width: 20px;
+                background-color: grey;
+                border-radius: 50%;
+                vertical-align: center;
+                margin-top: 15px;
+                margin-left: 10px;
+            }
+            
+            #ledbox{
+                display: flex;
+            }
+
+            
+        </style>
     </head>
     <body>
-        <h1 id="h1">This is a smart thermometer</h1>
+        <h1 id="h1">This is the smart thermometer</h1>
+        <div id="node_container">
+            <div id="ledbox">
+                <p>Led: </p>
+                <div id="led"></div>
+            </div>
+            <p>
+                Coordinates: 
+                (<span id="xx">.</span>;
+                <span id="yy">.</span>)   
+            </p>
+            <p>Temperature: <span id="t"></span></p>
+        </div>
     </body>
 </html>

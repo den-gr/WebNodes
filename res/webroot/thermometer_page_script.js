@@ -43,14 +43,14 @@ function setUpSocket(){
                     case "notify_state":
                         node.notifyState();
                         break;
-                    case "set_temperature":
-                        json.id == node.id ? node.setTemperature(json.temperature) : console.error("Wrong id");
-                        break;
                     case "move_node":
                         json.id == node.id ? node.setNewCoordinates(json.x, json.y) : console.error("Wrong id");
                         break;
                     case "disconnect_node":
                         json.id == node.id ? window.close() : console.error("Wrong id");
+                        break;
+                    case "change_node_state":
+                        changeNodeState(json);
                         break;
                     default:
                         console.error("Incorrect message type");
@@ -60,4 +60,29 @@ function setUpSocket(){
 			console.error(err);
 		}
 	};
+}
+
+
+
+function changeNodeState(json){
+    if(json.id == node.id){
+        if(json.device_type === "sensor"){
+            if(json.sensor_name === "thermometer"){
+                node.setTemperature(json.temperature);
+            }else{
+                console.error("Unknown sensor", json.sensor_name);
+            }
+    
+        }else if(json.device_type === "actuator"){
+            if(json.actuator_name === "led"){
+                node.turnOnLed(json.turn_on);
+            }else{
+                console.error("Unknown actuator", json.sensor_name);
+            }
+        }else{
+            console.error("Unknown mode for change the node's state", json.device_type);
+        }
+    }else{
+        console.error("Wrong id", json.id);
+    }
 }
