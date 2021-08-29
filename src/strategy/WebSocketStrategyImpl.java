@@ -1,10 +1,12 @@
 package strategy;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,18 +19,26 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	
 	private final List<ServerWebSocket> generatorList;
 	private final List<ServerWebSocket> managerList;
-	private final Map<Integer, ServerWebSocket> clientsMap;
+	private final Map<Integer, ServerWebSocket> clientsWebSocketMap;
+	private final Map<Integer, JSONObject> clientsConfigurationMap;
 	private final ThermometerNodeDataGenerator nodesDataGenerator;
 	
 	private final EventBus eBus;
+	
+	private final JSONObject nodesConfiguration;
 	
 		
 	public WebSocketStrategyImpl(EventBus ebus) {
 		this.eBus = ebus;
 		generatorList = new LinkedList<>();
 		managerList = new LinkedList<>();
-		clientsMap = new HashMap<>();
+		clientsWebSocketMap = new HashMap<>();
+		clientsConfigurationMap = new HashMap<>();
 		nodesDataGenerator = new ThermometerNodeDataGenerator(3, 20, 20);
+		
+		nodesConfiguration = new JSONObject();
+		nodesConfiguration.put("type", "nodes_configuration");
+		nodesConfiguration.put("list", new JSONArray());
 	}
 
 	@Override
@@ -54,6 +64,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 						managerList.add(webSocket);
 						eBus.consumer(CHANEL_M, m ->
 							webSocket.writeTextMessage(m.body().toString()));
+						webSocket.writeTextMessage(createNodesConfigurationMsg(clientsConfigurationMap.values()));
 						getAllStates();
 						System.out.println("Node manager msg: " +  json.toString());
 						break;
@@ -63,11 +74,15 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 					case "disconnect_node":
 						routeMessageToClient(webSocket, json);
 						break;
-					case "set_temperature":
+					case "node_configuration":
+						saveNodeConfiguration(json);
+						break;
+					case "change_node_state":
 						routeMessageToClient(webSocket, json);
 						break;
 					default:
 						System.out.println("Type of message is not recognized: " + json.toString());
+						webSocket.writeTextMessage(createErrorMsg("Type of message is not recognized"));
 				}
 				
 			}else {
@@ -86,14 +101,15 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
         	generatorList.remove(webSocket);
         }else if(managerList.contains(webSocket)) {
         	managerList.remove(webSocket);
-        }else if(clientsMap.values().contains(webSocket)) {
-        	int id = clientsMap.entrySet()
+        }else if(clientsWebSocketMap.values().contains(webSocket)) {
+        	int id = clientsWebSocketMap.entrySet()
         				.stream()
         				.filter(e -> e.getValue().equals(webSocket))
         				.findFirst()
         				.map(m -> m.getKey())
         				.get();
-        	clientsMap.remove(id);
+        	clientsWebSocketMap.remove(id);
+        	clientsConfigurationMap.remove(id);
         	eBus.publish(CHANEL_M, createNodeDisconnectionMsg(id));
         }else {
         	System.out.println("Type of disconnected client is not recognized");
@@ -102,11 +118,11 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	
 	private void routeMessageToClient(ServerWebSocket webSocket, JSONObject json) {
 		if(managerList.contains(webSocket)) {
-			if(clientsMap.containsKey(json.getInt("id"))) {
-				clientsMap.get(json.getInt("id")).writeTextMessage(json.toString());
+			if(clientsWebSocketMap.containsKey(json.getInt("id"))) {
+				clientsWebSocketMap.get(json.getInt("id")).writeTextMessage(json.toString());
 			}else {
 				webSocket.writeTextMessage(
-						createError("Node with id "+ json.getInt("id") +" does not exists"));
+						createErrorMsg("Node with id "+ json.getInt("id") +" does not exists"));
 			}
 			
 		}
@@ -129,11 +145,31 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		obj.put("id", nodeData.id);
 		obj.put("x", nodeData.x);
 		obj.put("y", nodeData.y);
-		clientsMap.put(nodeData.id, webSocket);
+		clientsWebSocketMap.put(nodeData.id, webSocket);
 		webSocket.writeTextMessage(obj.toString());
 	}
 	
-	private String createError(String errorMsg) {
+	private void getAllStates() {
+		JSONObject obj = new JSONObject();
+		obj.put("type", "notify_state");
+		for (ServerWebSocket ws : clientsWebSocketMap.values()) {
+			ws.writeTextMessage(obj.toString());
+		}
+	}
+	
+	private void saveNodeConfiguration(JSONObject json) {
+		json.remove("type");
+		clientsConfigurationMap.put(json.getInt("id"), json);
+		
+		var list = new LinkedList<JSONObject>();
+		list.add(json);
+		
+		eBus.publish(CHANEL_M, createNodesConfigurationMsg(list));
+	}
+	
+	/* Create standard messages */
+	
+	private String createErrorMsg(String errorMsg) {
 		JSONObject obj = new JSONObject();
 		obj.put("type", "error");
 		obj.put("error_msg", errorMsg);
@@ -147,11 +183,9 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		return obj.toString();
 	}
 	
-	private void getAllStates() {
-		JSONObject obj = new JSONObject();
-		obj.put("type", "notify_state");
-		for (ServerWebSocket ws : clientsMap.values()) {
-			ws.writeTextMessage(obj.toString());
-		}
+	private String createNodesConfigurationMsg(Collection<JSONObject> confList) {
+		return new JSONObject()
+				.put("type", "nodes_configuration")
+				.put("conf", new JSONArray(confList)).toString();
 	}
 }
