@@ -86,5 +86,6 @@ class ThermometerNode{
         this.y = y;
         this.xLabel.innerText = x;
         this.yLabel.innerText = y;
+        this.notifyState();
     }
 }
