@@ -158,13 +158,18 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	}
 	
 	private void saveNodeConfiguration(JSONObject json) {
-		json.remove("type");
-		clientsConfigurationMap.put(json.getInt("id"), json);
+		if(json.getString("type").equals("node_configuration") && json.has("id")) {
+			json.remove("type");
+			clientsConfigurationMap.put(json.getInt("id"), json);
+			
+			var list = new LinkedList<JSONObject>();
+			list.add(json);
+			
+			eBus.publish(CHANEL_M, createNodesConfigurationMsg(list));
+		}else {
+			System.out.println("Fail saving node configuration");
+		}
 		
-		var list = new LinkedList<JSONObject>();
-		list.add(json);
-		
-		eBus.publish(CHANEL_M, createNodesConfigurationMsg(list));
 	}
 	
 	/* Create standard messages */
