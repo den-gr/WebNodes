@@ -6,8 +6,8 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import strategy.WebSocketStrategy;
-import strategy.WebSocketStrategyImpl;
+import strategy.websocket.WebSocketStrategy;
+import strategy.websocket.WebSocketStrategyImpl;
 
 public class Server extends AbstractVerticle {
 	private final static String PATH = "res/webroot/";

@@ -1,4 +1,4 @@
-package strategy;
+package strategy.nodes.p2p;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package strategy;
+package strategy.websocket;
 
 import io.vertx.core.http.ServerWebSocket;
 

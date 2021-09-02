@@ -6,7 +6,10 @@ let node;
 
 let temperatureUpdate;
 
+let connectionsManager;
+
 window.onload = function(){
+    connectionsManager = new WebrtcManager();
 	setUpSocket();
     temperatureUpdate = setInterval(() => {
         var plusOrMinus = Math.random() < 0.5 ? -1 : 1;
@@ -52,10 +55,17 @@ function setUpSocket(){
                     case "change_node_state":
                         changeNodeState(json);
                         break;
+                    case "connection_available":
+                        connectionsManager.connectionAvailable();
+                        break;
                     default:
                         console.error("Incorrect message type");
                 }
-			} 
+			}else if(json.desc || json.candidate){
+                connectionsManager.elaborateMsg(json);
+            }else{
+                console.error("Message unrecognized", json);
+            } 
 		}catch(err){
 			console.error(err);
 		}

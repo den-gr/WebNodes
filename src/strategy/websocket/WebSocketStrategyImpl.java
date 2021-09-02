@@ -1,4 +1,4 @@
-package strategy;
+package strategy.websocket;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,10 +12,17 @@ import org.json.JSONObject;
 
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.ServerWebSocket;
+import strategy.nodes.p2p.WebRTCConnector;
+import strategy.nodes.p2p.WebRTCConnectorImpl;
 import utils.ThermometerNodeDataGenerator;
 
 public class WebSocketStrategyImpl implements WebSocketStrategy {
 	private final static String CHANEL_M = "generator";
+	private final static int COLUMNS = 3;
+	private final static int STEP_X = 20;
+	private final static int STEP_Y = 20;
+	private final static int RADIUS = 25;
+	
 	
 	private final List<ServerWebSocket> generatorList;
 	private final List<ServerWebSocket> managerList;
@@ -26,6 +33,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	private final EventBus eBus;
 	
 	private final JSONObject nodesConfiguration;
+	private final WebRTCConnector webRTCConnector;
 	
 		
 	public WebSocketStrategyImpl(EventBus ebus) {
@@ -34,7 +42,8 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		managerList = new LinkedList<>();
 		clientsWebSocketMap = new HashMap<>();
 		clientsConfigurationMap = new HashMap<>();
-		nodesDataGenerator = new ThermometerNodeDataGenerator(3, 20, 20);
+		nodesDataGenerator = new ThermometerNodeDataGenerator(COLUMNS, STEP_X, STEP_Y);
+		webRTCConnector = new WebRTCConnectorImpl(clientsWebSocketMap, RADIUS);
 		
 		nodesConfiguration = new JSONObject();
 		nodesConfiguration.put("type", "nodes_configuration");
@@ -49,6 +58,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 				switch(json.getString("type")) {
 					case "node_state":
 						eBus.publish(CHANEL_M, json.toString());
+						webRTCConnector.elaborateNewNodeState(json);
 						System.out.println("State msg: " +  json.toString());
 						break;
 					case "node_setup_demand":
@@ -64,7 +74,9 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 						managerList.add(webSocket);
 						eBus.consumer(CHANEL_M, m ->
 							webSocket.writeTextMessage(m.body().toString()));
-						webSocket.writeTextMessage(createNodesConfigurationMsg(clientsConfigurationMap.values()));
+						if(!clientsConfigurationMap.isEmpty()) {
+							webSocket.writeTextMessage(createNodesConfigurationMsg(clientsConfigurationMap.values()));
+						}
 						getAllStates();
 						System.out.println("Node manager msg: " +  json.toString());
 						break;
@@ -85,6 +97,8 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 						webSocket.writeTextMessage(createErrorMsg("Type of message is not recognized"));
 				}
 				
+			}else if(json.has("desc") || json.has("candidate")) {
+				webRTCConnector.elaborateSignalingMsg(webSocket, json);
 			}else {
 				System.out.println("JSON message must have a type");
 			}
@@ -93,6 +107,8 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		}
 		
 	}
+
+
 
 	@Override
 	public void CloseHandler(ServerWebSocket webSocket) {
@@ -110,6 +126,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
         				.get();
         	clientsWebSocketMap.remove(id);
         	clientsConfigurationMap.remove(id);
+        	webRTCConnector.notifyNodeDisconnection(id);
         	eBus.publish(CHANEL_M, createNodeDisconnectionMsg(id));
         }else {
         	System.out.println("Type of disconnected client is not recognized");
@@ -193,4 +210,5 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 				.put("type", "nodes_configuration")
 				.put("conf", new JSONArray(confList)).toString();
 	}
+
 }

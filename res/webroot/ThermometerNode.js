@@ -8,6 +8,7 @@ class ThermometerNode{
         this.x = x;
         this.y = y;
         this.temperature = 25;
+        this.connectedNodes = new Map();
         this.webSocket = webSocket;
         
         document.title = "Thermometer " + this.id;
@@ -63,19 +64,30 @@ class ThermometerNode{
                 {"actuator_name": "led",
                 "value_name": "turn_on",
                 "value_type": "boolean"}
-            ]
+            ],
+            
         };
         this.webSocket.send(JSON.stringify(obj));
     }
 
     notifyState(){
+        let arr = [];
+        let it = this.connectedNodes.values();
+
+        let result = it.next();
+        while (!result.done) {
+            arr.push(result.value);
+            result = it.next();
+        }
+        
         let obj = JSON.stringify(
             {"type": "node_state",
             "id": this.id, 
             "temperature": this.temperature, 
             "x": this.x, 
             "y": this.y,
-            "led_on": this.ledLabel.classList.contains(LED_ON_CLASS)
+            "led_on": this.ledLabel.classList.contains(LED_ON_CLASS),
+            "connected_nodes_id": arr
             });
         webSocket.send(obj);
     }
@@ -87,5 +99,25 @@ class ThermometerNode{
         this.xLabel.innerText = x;
         this.yLabel.innerText = y;
         this.notifyState();
+    }
+
+    addConnectedNode(channelId, nodeId){
+        console.log("Before add", this.connectedNodes);
+        this.#print();
+        this.connectedNodes.set(channelId, nodeId);
+        console.log("After add", this.connectedNodes);
+        this.#print();
+        this.notifyState();
+    }
+
+    removeConnectedNode(channelId){
+        this.connectedNodes.delete(channelId);
+        this.notifyState();
+    }
+
+    #print(){
+        for (var i = 0, keys = Object.keys(this.connectedNodes), ii = keys.length; i < ii; i++) {
+            console.log(keys[i] + '|' + map[keys[i]].list);
+        }
     }
 }

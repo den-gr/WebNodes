@@ -6,8 +6,9 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-import strategy.NodeConnectionStrategy;
-import strategy.NodeConnectionStrategyImpl;
+
+import strategy.nodes.p2p.NodeConnectionStrategy;
+import strategy.nodes.p2p.NodeConnectionStrategyImpl;
 
 class TestNodeConectionStrategy {
 	private NodeConnectionStrategy strategy;
