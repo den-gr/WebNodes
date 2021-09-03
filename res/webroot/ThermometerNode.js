@@ -2,7 +2,6 @@ const LED_ON_CLASS = "led_on";
 
 class ThermometerNode{
    
-    
     constructor(id, x, y, radius, webSocket, webrtcManager){
         this.id = id;
         this.x = x;
@@ -41,8 +40,6 @@ class ThermometerNode{
     }
 
     turnOnLed(turnOn){
-       
-        //this.ledLabel.style.backgroundColor = turnOn ? "red" : "gray";
         if(turnOn && !this.ledLabel.classList.contains(LED_ON_CLASS)){
             this.ledLabel.classList.add(LED_ON_CLASS);
         }else if(!turnOn && this.ledLabel.classList.contains(LED_ON_CLASS)){
@@ -54,6 +51,64 @@ class ThermometerNode{
         return this.temperature;
     }
 
+    notifyState(){
+        let obj = JSON.stringify(
+            {"type": "node_state",
+            "id": this.id, 
+            "temperature": this.temperature, 
+            "x": this.x, 
+            "y": this.y,
+            "led_on": this.ledLabel.classList.contains(LED_ON_CLASS),
+            "connected_nodes_id": this.#getArrayWithConnectedNodesId()
+            });
+        webSocket.send(obj);
+    }
+
+    setNewCoordinates(x, y){
+        this.x = x;
+        this.y = y;
+        this.xLabel.innerText = x;
+        this.yLabel.innerText = y;
+        this.webrtcManager.sendToAll(JSON.stringify({"type": "movementTo", "x": this.x, "y": this.y}));
+        this.notifyState();
+    }
+
+    addConnectedNode(channelId, nodeId){
+        this.connectedNodes.set(channelId, nodeId);
+        this.notifyState();
+        this.#updateConnectedNodeslabel();
+    }
+
+    removeConnectedNode(channelId){
+        this.connectedNodes.delete(channelId);
+        this.notifyState();
+        this.#updateConnectedNodeslabel();
+    }
+
+    //return true if a point with coordinates (nodeX; nodeY) is outside of radius of node
+    isOutOfRadius(nodeX ,nodeY){
+        return Math.hypot(this.x-nodeX, this.y-nodeY) > this.radius;
+    }
+
+    // Update web page
+    #updateConnectedNodeslabel(){
+        this.connectedNodesLable.innerText = this.#getArrayWithConnectedNodesId(); 
+    }
+
+    // return an array with id of the connected nodes
+    #getArrayWithConnectedNodesId(){
+        let arr = [];
+        let it = this.connectedNodes.values();
+
+        let result = it.next();
+        while (!result.done) {
+            arr.push(result.value);
+            result = it.next();
+        }
+        return arr;
+    }
+
+    //Send Node configuration to server
     #sendNodeConfiguration(){
         let obj = {
             "type": "node_configuration",
@@ -71,70 +126,5 @@ class ThermometerNode{
             
         };
         this.webSocket.send(JSON.stringify(obj));
-    }
-
-    notifyState(){
-        let obj = JSON.stringify(
-            {"type": "node_state",
-            "id": this.id, 
-            "temperature": this.temperature, 
-            "x": this.x, 
-            "y": this.y,
-            "led_on": this.ledLabel.classList.contains(LED_ON_CLASS),
-            "connected_nodes_id": this.#getArrayWithConnectedNodesId()
-            });
-        webSocket.send(obj);
-    }
-
-    setNewCoordinates(x, y){
-        console.log("change coor")
-        this.x = x;
-        this.y = y;
-        this.xLabel.innerText = x;
-        this.yLabel.innerText = y;
-        this.webrtcManager.sendToAll(JSON.stringify({"type": "movementTo", "x": this.x, "y": this.y}));
-        this.notifyState();
-    }
-
-    addConnectedNode(channelId, nodeId){
-        console.log("Before add", this.connectedNodes);
-        this.#print();
-        this.connectedNodes.set(channelId, nodeId);
-        console.log("After add", this.connectedNodes);
-        this.#print();
-        this.notifyState();
-        this.#updateConnectedNodeslabel();
-    }
-
-    removeConnectedNode(channelId){
-        this.connectedNodes.delete(channelId);
-        this.notifyState();
-        this.#updateConnectedNodeslabel();
-    }
-
-    #updateConnectedNodeslabel(){
-        this.connectedNodesLable.innerText = this.#getArrayWithConnectedNodesId(); 
-    }
-
-    #getArrayWithConnectedNodesId(){
-        let arr = [];
-        let it = this.connectedNodes.values();
-
-        let result = it.next();
-        while (!result.done) {
-            arr.push(result.value);
-            result = it.next();
-        }
-        return arr;
-    }
-
-    #print(){
-        for (var i = 0, keys = Object.keys(this.connectedNodes), ii = keys.length; i < ii; i++) {
-            console.log(keys[i] + '|' + map[keys[i]].list);
-        }
-    }
-
-    isOutOfRadius(nodeX ,nodeY){
-        return Math.hypot(this.x-nodeX, this.y-nodeY) > this.radius;
     }
 }
