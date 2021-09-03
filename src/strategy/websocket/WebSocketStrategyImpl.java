@@ -108,8 +108,6 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		
 	}
 
-
-
 	@Override
 	public void CloseHandler(ServerWebSocket webSocket) {
 		System.out.println("Client disconnected "+ webSocket.textHandlerID());
@@ -162,6 +160,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		obj.put("id", nodeData.id);
 		obj.put("x", nodeData.x);
 		obj.put("y", nodeData.y);
+		obj.put("radius", RADIUS);
 		clientsWebSocketMap.put(nodeData.id, webSocket);
 		webSocket.writeTextMessage(obj.toString());
 	}

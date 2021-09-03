@@ -41,7 +41,7 @@ public class NodeConnectionStrategyImpl implements NodeConnectionStrategy{
 		if(connectedNodes.isPresent()) {
 			node.updateConnectedNodes(connectedNodes.get());
 		}
-		
+		System.out.println("Position Map" + positionMap);
 		return node.getNotConnectedNodesId(nodesInRadius);
 		
 	}
@@ -85,6 +85,7 @@ public class NodeConnectionStrategyImpl implements NodeConnectionStrategy{
 		}
 		
 		public void updateConnectedNodes(Set<Integer> newConnectedNodesSet) {
+			System.out.println("new connected nodes UPDATE!!: " + newConnectedNodesSet);
 			this.connectedNoded = newConnectedNodesSet;
 		}
 		
@@ -95,11 +96,17 @@ public class NodeConnectionStrategyImpl implements NodeConnectionStrategy{
 														.collect(Collectors.toSet());
 				if(!notConnectedNodesId.isEmpty()) {
 					updateConnectedNodes(nodesInRadius);
+					
 					return Optional.of(notConnectedNodesId);
 				}
 			}
 			
 			return Optional.empty();
+		}
+		
+		@Override
+		public String toString() {
+			return id + " Position ("+ x + "; " + y + ")";
 		}
 	}
 }

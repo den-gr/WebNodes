@@ -57,6 +57,8 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 			if(!toBeConnected.get(senderId).isEmpty()) {
 				//there are another nodes to be connected
 				SenderWebSocket.writeTextMessage(getConnectionsAvailableMsg());
+			}else {
+				toBeConnected.remove(senderId);
 			}
 		}
 	}
@@ -65,8 +67,9 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 	public void elaborateNewNodeState(JSONObject json) {
 		if(json.has("id") && json.has("x") && json.has("y")) {
 			int id = json.getInt("id");
-			Set<Integer> set = new HashSet<>();
-			if(json.has("connected_nodes_id")) {//If in node's state has an array with all connected nodes
+			Set<Integer> set = null;
+			if(json.has("connected_nodes_id")) {//If in node's state is an array with all connected nodes
+				set = new HashSet<>();
 				var jsonArrList = json.getJSONArray("connected_nodes_id").toList();
 				
 				for (Object  obj : jsonArrList) {
@@ -79,8 +82,11 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 				
 			}
 			var nodesIdToConnect = nodeConnectionStrategy.findNewConnections(json.getInt("id"), json.getInt("x"), json.getInt("y"), 
-									set.isEmpty() ? Optional.empty() : Optional.of(set));
+									set == null ? Optional.empty() : Optional.of(set));
+
+			
 			if(nodesIdToConnect.isPresent()) { // if there are new nodes that must be connected
+				System.out.println(">>>Nodes ID to connect:" + nodesIdToConnect + " | for node " + id);
 				if(toBeConnected.containsKey(id)){
 					toBeConnected.get(id).addAll(nodesIdToConnect.get());
 				}else {

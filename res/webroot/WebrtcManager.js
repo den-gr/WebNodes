@@ -32,6 +32,18 @@ class WebrtcManager{
 		}
 	}
 
+	// send(channelId, msg){
+	// 	for(let i = 0; i < this.#peers.length; i++){
+	// 		if(this.#peers[i].getChannelId() === channelId){
+	// 			this.#peers[i].channel.send(msg);
+	// 			return;
+	// 		}
+	// 	}	
+	// 	console.err("Channel with id " + channelId + "is not found");
+	// }
+
+
+
 	// if a new msg is received
 	async elaborateMsg(json){
 		if(json.desc){
@@ -95,14 +107,14 @@ class ConnectedPeer{
 		this.peerConnection.oniceconnectionstatechange = (e) => {
 			if(this.peerConnection.iceConnectionState == 'disconnected'){
 				console.log("disconnected");
-				node.removeConnectedNode(this.id);
+				node.removeConnectedNode(this.getChannelId());
 			}
 		};
 	}
 	
 	//Create a new channel
 	newChannel(){
-		this.#setUpChannel(this.peerConnection.createDataChannel("Channel", {id: this.id}));
+		this.#setUpChannel(this.peerConnection.createDataChannel("Channel", {id: this.getChannelId()}));
 
 		// Send any ice candidates to the other peer.
 		this.peerConnection.onicecandidate = e => {if(e.candidate != null) webSocket.send(JSON.stringify(e.candidate))}
@@ -128,16 +140,27 @@ class ConnectedPeer{
 			this.channel.send(JSON.stringify({"type": "hello", "id": node.id}))
 		}
 		this.channel.onmessage = (m) => {
-			console.log("A messge from p2p channel " + this.id + ":", JSON.parse(m.data));
+			console.log("A messge from p2p channel " + this.getChannelId() + ":", JSON.parse(m.data));
 			let json = JSON.parse(m.data);
 			if(json.type == "hello"){
 				console.log("Hello type");
-				node.addConnectedNode(this.id,json.id);
+				node.addConnectedNode(this.getChannelId(), json.id);
+			}else if(json.type == "movementTo"){
+				if(node.isOutOfRadius(json.x, json.y)){
+					console.log("out of radius");
+					node.removeConnectedNode(this.getChannelId());
+					this.channel.close();
+				}
 			}
 		}
 		this.channel.onclose = () => {
 			console.log("Close a P2P connection"); //handleChannelClose;
+			node.removeConnectedNode(this.getChannelId());
 		} 
+	}
+
+	getChannelId(){
+		return this.id;
 	}
 }
 
