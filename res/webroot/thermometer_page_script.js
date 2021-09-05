@@ -13,7 +13,7 @@ window.onload = function(){
 	setUpSocket();
     temperatureUpdate = setInterval(() => {
         var plusOrMinus = Math.random() < 0.5 ? -1 : 1;
-        node.setTemperature(node.getTemperature() + Math.random()*plusOrMinus);
+        node.setValue(node.getValue("thermometer") + Math.random()*plusOrMinus, "thermometer");
     }, Math.random()*10000 + 15000);
 }
 
@@ -38,7 +38,16 @@ function setUpSocket(){
                 switch(json.type){
                     case "node_setup":
                         if(node == null){
-                            node = new ThermometerNode(json.id, json.x, json.y, json.radius, webSocket, connectionsManager);
+
+                            node = new GenericNode(json.id, json.node_configuration, webSocket, connectionsManager);
+                            if(node.ifConfigurationValid()){
+                                console.log("Node is valid");
+                                node.setNewCoordinates(json.x, json.y);
+                                node.sendNodeConfiguration();
+                            }else{
+                                console.error("node configuration is not valid");
+                                node = null;
+                            }
                         }else{
                             console.error("Can't create a new node, because it is already exists")
                         }

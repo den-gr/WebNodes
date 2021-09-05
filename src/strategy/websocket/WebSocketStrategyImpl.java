@@ -14,7 +14,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.ServerWebSocket;
 import strategy.nodes.p2p.WebRTCConnector;
 import strategy.nodes.p2p.WebRTCConnectorImpl;
-import utils.ThermometerNodeDataGenerator;
+import utils.NodeDataGenerator;
 
 public class WebSocketStrategyImpl implements WebSocketStrategy {
 	private final static String CHANEL_M = "generator";
@@ -28,12 +28,12 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	private final List<ServerWebSocket> managerList;
 	private final Map<Integer, ServerWebSocket> clientsWebSocketMap;
 	private final Map<Integer, JSONObject> clientsConfigurationMap;
-	private final ThermometerNodeDataGenerator nodesDataGenerator;
+	private NodeDataGenerator nodesDataGenerator;
 	
 	private final EventBus eBus;
 	
 	private final JSONObject nodesConfiguration;
-	private final WebRTCConnector webRTCConnector;
+	private  WebRTCConnector webRTCConnector;
 	
 		
 	public WebSocketStrategyImpl(EventBus ebus) {
@@ -42,7 +42,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		managerList = new LinkedList<>();
 		clientsWebSocketMap = new HashMap<>();
 		clientsConfigurationMap = new HashMap<>();
-		nodesDataGenerator = new ThermometerNodeDataGenerator(COLUMNS, STEP_X, STEP_Y);
+		nodesDataGenerator = new NodeDataGenerator(COLUMNS, STEP_X, STEP_Y, RADIUS, null);
 		webRTCConnector = new WebRTCConnectorImpl(clientsWebSocketMap, RADIUS);
 		
 		nodesConfiguration = new JSONObject();
@@ -92,6 +92,10 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 					case "change_node_state":
 						routeMessageToClient(webSocket, json);
 						break;
+					case "create_new_nodes":
+						CreateNewNodes(webSocket, json);
+
+						break;
 					default:
 						System.out.println("Type of message is not recognized: " + json.toString());
 						webSocket.writeTextMessage(createErrorMsg("Type of message is not recognized"));
@@ -107,6 +111,8 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		}
 		
 	}
+
+
 
 	@Override
 	public void CloseHandler(ServerWebSocket webSocket) {
@@ -153,14 +159,52 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		
 	}
 	
+	private void CreateNewNodes(ServerWebSocket webSocket, JSONObject json) {
+	
+		
+		
+		
+		int cols = json.has("cols") ? json.getInt("cols") : COLUMNS;
+		int stepX = json.has("stepX") ? json.getInt("stepX") : STEP_X;
+		int stepY = json.has("stepY") ? json.getInt("stepY") : STEP_Y;
+		int radius = json.has("radius") ? json.getInt("radius") : RADIUS;
+		
+		var configuration =  json.has("configuration")? json.getJSONObject("configuration") : null;
+		
+		nodesDataGenerator =  new NodeDataGenerator(cols, stepX, stepY, radius, configuration);
+		webRTCConnector = new WebRTCConnectorImpl(clientsWebSocketMap, RADIUS);
+		
+		
+		
+		if(json.has("node_quantity")) {
+			if(generatorList.isEmpty()) {
+				webSocket.writeTextMessage(createErrorMsg("Configurations are saved, but there are not active node generators"));
+				return;
+			}
+			
+			JSONObject obj = new JSONObject();
+			obj.put("type", "close_all_nodes");
+			for (ServerWebSocket serverWebSocket : generatorList) {
+				serverWebSocket.writeTextMessage(obj.toString());
+			}
+			
+			JSONObject createNodeMsg = new JSONObject();
+			createNodeMsg.put("type", "generator_setup");
+			createNodeMsg.put("node_quantity", json.getInt("node_quantity"));
+			
+			//at moment use only one generator
+			generatorList.get(0).writeTextMessage(createNodeMsg.toString());
+		}
+	}
+	
 	private void nodeSetup(ServerWebSocket webSocket) {
 		var nodeData = nodesDataGenerator.getNewNodeData();
 		JSONObject obj = new JSONObject();
 		obj.put("type", "node_setup");
-		obj.put("id", nodeData.id);
+		obj.put("node_configuration", nodeData.getConfiguration());
 		obj.put("x", nodeData.x);
 		obj.put("y", nodeData.y);
-		obj.put("radius", RADIUS);
+		obj.put("id", nodeData.id);
 		clientsWebSocketMap.put(nodeData.id, webSocket);
 		webSocket.writeTextMessage(obj.toString());
 	}

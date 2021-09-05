@@ -56,12 +56,13 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 			}	
 		}else if(json.has("candidate")) {
 			System.out.println("This is candidate form : "  + getIdFromWebSocket(SenderWebSocket));
-			int destinationID = toBeConnected.get(senderId).get(0);
+			
 			
 			
 			String candidate = json.getString("candidate");
 			//At moment accepts only host candidate
 			if(candidate.contains("host")) {
+				int destinationID = toBeConnected.get(senderId).get(0);
 				System.out.println("host candidate");
 				//route second signaling message 
 				clientsWebSocketMap.get(destinationID).writeTextMessage(json.toString());

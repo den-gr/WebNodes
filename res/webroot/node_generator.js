@@ -26,7 +26,7 @@ function setUpSocket(){
 	webSocket.onclose = () => console.log('close');
 	webSocket.onerror = () => console.log('error', error.message);
 
-	webSocket.onmessage = function(msg) {
+	webSocket.onmessage = async function(msg) {
         console.log(msg.data);
         try{	
             let json = JSON.parse(msg.data);
@@ -39,12 +39,19 @@ function setUpSocket(){
                 for(let i = 0; i < json.node_quantity; i++){
                     pages.push(window.open('http://localhost:8081/static/tnode.html', "_blank"));
                     //pages.push(window.open('http://1104-5-170-128-165.ngrok.io/static/tnode.html', "_blank"));
+                     await sleep(200);
                 }
                 document.getElementById('number_of_nodes').textContent = pages.length;
+            }else if(json.type == "close_all_nodes"){
+                pages.forEach(item => item.close());
             }
             
         }catch(err){
             console.error(err);
         }
 	};
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
