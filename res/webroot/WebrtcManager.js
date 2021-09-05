@@ -98,11 +98,13 @@ class WebrtcManager{
  * A class that incapsulate a single connection with an peer
  */
 class ConnectedPeer{
-
+	static STUN_SERVER_URL = 'stun:stun.l.google.com:19302';
 	constructor(observer, id){
 		this.id = id;
 		this.observer = observer;
-		this.peerConnection =  new RTCPeerConnection();
+		
+		let configuration = {iceServers: [{url: ConnectedPeer.STUN_SERVER_URL}]};
+		this.peerConnection =  new RTCPeerConnection(configuration);
 		this.peerConnection.ondatachannel = (event) =>  this.#setUpChannel(event.channel);
 		this.peerConnection.oniceconnectionstatechange = (e) => {
 			if(this.peerConnection.iceConnectionState == 'disconnected'){

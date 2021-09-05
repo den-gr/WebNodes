@@ -1,4 +1,5 @@
 const serverURL = 'ws://localhost:8081';
+//const serverURL = 'ws://1104-5-170-128-165.ngrok.io'
 const MAX_NODES = 10;
 let pages = [];
 let webSocket;
@@ -37,6 +38,7 @@ function setUpSocket(){
                 }
                 for(let i = 0; i < json.node_quantity; i++){
                     pages.push(window.open('http://localhost:8081/static/tnode.html', "_blank"));
+                    //pages.push(window.open('http://1104-5-170-128-165.ngrok.io/static/tnode.html', "_blank"));
                 }
                 document.getElementById('number_of_nodes').textContent = pages.length;
             }

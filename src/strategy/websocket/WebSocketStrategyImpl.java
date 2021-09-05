@@ -21,7 +21,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	private final static int COLUMNS = 3;
 	private final static int STEP_X = 20;
 	private final static int STEP_Y = 20;
-	private final static int RADIUS = 25;
+	private final static int RADIUS = 50;
 	
 	
 	private final List<ServerWebSocket> generatorList;
@@ -67,7 +67,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 						break;
 					case "generator_setup_demand":
 						generatorList.add(webSocket);
-						nodeGeneratorSetup();
+						nodeGeneratorSetup(webSocket);
 						System.out.println("generator_setup_demand msg: " +  json.toString());
 						break;
 					case "manager_setup_demand":
@@ -143,14 +143,14 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		}
 	}
 
-	private void nodeGeneratorSetup() {
+	private void nodeGeneratorSetup(ServerWebSocket webSocket) {
 		//to do 
 		JSONObject obj = new JSONObject();
 		obj.put("type", "generator_setup");
 		obj.put("node_quantity", 2);
-		for (ServerWebSocket sock : generatorList) {
-			sock.writeTextMessage(obj.toString());
-		}
+		
+		webSocket.writeTextMessage(obj.toString());
+		
 	}
 	
 	private void nodeSetup(ServerWebSocket webSocket) {
