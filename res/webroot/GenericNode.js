@@ -72,13 +72,13 @@ class GenericNode{
     #findDevice(device_name){
         for(let i = 0; i < this.sensors.length; i++){
             if(this.sensors[i].sensor_name === device_name){
-                console.log("find sensor");
+                //console.log("find sensor");
                 return this.sensors[i];
             }
         }
         for(let i = 0; i < this.actuators.length; i++){
             if(this.actuators[i].actuator_name === device_name){
-                console.log("find actuator");
+                //console.log("find actuator");
                 return this.actuators[i];
             }
         }

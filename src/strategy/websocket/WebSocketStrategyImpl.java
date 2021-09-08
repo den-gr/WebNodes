@@ -160,10 +160,6 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	}
 	
 	private void CreateNewNodes(ServerWebSocket webSocket, JSONObject json) {
-	
-		
-		
-		
 		int cols = json.has("cols") ? json.getInt("cols") : COLUMNS;
 		int stepX = json.has("stepX") ? json.getInt("stepX") : STEP_X;
 		int stepY = json.has("stepY") ? json.getInt("stepY") : STEP_Y;
@@ -173,8 +169,6 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		
 		nodesDataGenerator =  new NodeDataGenerator(cols, stepX, stepY, radius, configuration);
 		webRTCConnector = new WebRTCConnectorImpl(clientsWebSocketMap, RADIUS);
-		
-		
 		
 		if(json.has("node_quantity")) {
 			if(generatorList.isEmpty()) {

@@ -9,8 +9,9 @@ let temperatureUpdate;
 let connectionsManager;
 
 window.onload = function(){
-    connectionsManager = new WebrtcManager();
-	setUpSocket();
+    setUpSocket();
+    connectionsManager = new WebrtcManager(webSocket);
+	
     temperatureUpdate = setInterval(() => {
         var plusOrMinus = Math.random() < 0.5 ? -1 : 1;
         node.setValue(node.getValue("thermometer") + Math.random()*plusOrMinus, "thermometer");
@@ -40,6 +41,7 @@ function setUpSocket(){
                         if(node == null){
 
                             node = new GenericNode(json.id, json.node_configuration, webSocket, connectionsManager);
+                            connectionsManager.setStrategy(new ChannelStrategy(connectionsManager, node));
                             if(node.ifConfigurationValid()){
                                 console.log("Node is valid");
                                 node.setNewCoordinates(json.x, json.y);
