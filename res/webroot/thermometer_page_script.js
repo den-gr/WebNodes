@@ -13,9 +13,34 @@ window.onload = function(){
     connectionsManager = new WebrtcManager(webSocket);
 	
     temperatureUpdate = setInterval(() => {
-        var plusOrMinus = Math.random() < 0.5 ? -1 : 1;
-        node.setValue(node.getValue("thermometer") + Math.random()*plusOrMinus, "thermometer");
-    }, Math.random()*10000 + 15000);
+        let sensors = node.getSensors();
+        if(sensors.length > 0){
+            let sensor = sensors[Math.floor(Math.random() * Math.floor(sensors.length))];
+            let plusOrMinus = Math.random() < 0.5 ? -1 : 1;
+            switch(sensor.getValueType()){
+                case "real":
+                    node.setValue(sensor.getValue() + Math.random()*plusOrMinus, sensor.sensor_name);
+                    break;
+                case "integer":
+                    node.setValue(sensor.getValue() + plusOrMinus, sensor.sensor_name);
+                    break;
+                case "natural":
+                    if(sensor.getValue() + plusOrMinus < 0){
+                        node.setValue(sensor.getValue() + 1, sensor.sensor_name);
+                    }else{
+                        node.setValue(sensor.getValue() + plusOrMinus, sensor.sensor_name);
+                    }
+                    break;
+                case "boolean":
+                    node.setValue(!sensor.getValue(), sensor.sensor_name);
+                    break;
+                default:
+                    console.error("Type of sensor value was not recognized");
+            }
+            
+            
+        }       
+    }, Math.random()*10000 + 1000);
 }
 
 

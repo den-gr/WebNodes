@@ -69,6 +69,10 @@ class GenericNode{
         }
     }
 
+    getSensors(){
+        return this.sensors;
+    }
+
     #findDevice(device_name){
         for(let i = 0; i < this.sensors.length; i++){
             if(this.sensors[i].sensor_name === device_name){
@@ -100,7 +104,8 @@ class GenericNode{
         this.actuators.forEach(actuator => {
             obj[actuator.value_name] = actuator.value;
         });
-        webSocket.send(JSON.stringify(obj));
+        this.webSocket.send("test");
+        this.webSocket.send(JSON.stringify(obj));
     }
 
     setNewCoordinates(x, y){
@@ -108,7 +113,7 @@ class GenericNode{
         this.y = y;
         this.xLabel.innerText = x;
         this.yLabel.innerText = y;
-        this.webrtcManager.sendToAll(JSON.stringify({"type": "movementTo", "x": this.x, "y": this.y}));
+        this.webrtcManager.sendMsgToConnectedNodes(JSON.stringify({"type": "movementTo", "x": this.x, "y": this.y}));
         this.notifyState();
     }
 
@@ -171,13 +176,32 @@ class Device{
     }
 
     setValue(new_value){
-        //to do type check
-        this.value = Math.round(new_value * 100) / 100;
+        switch(this.value_type){
+            case "real":
+                this.value = Math.round(new_value * 100) / 100;
+                break;
+            case "integer":
+                this.value = Math.floor(new_value);
+                break;
+            case "natural":
+                this.value  = new_value < 0 ? 0 : new_value;
+                break;
+            case "boolean":
+                this.value  = typeof variable == "boolean" ? new_value : new_value > 0 ;
+                break;
+            default:
+                console.error("Type of sensor value was not recognized");
+        }
         this.span.innerText = this.value;
+        
     }
 
     getValue(){
         return this.value;
+    }
+
+    getValueType(){
+        return this.value_type;
     }
 
     setHTML(name){
