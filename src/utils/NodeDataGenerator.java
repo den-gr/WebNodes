@@ -76,6 +76,27 @@ public class NodeDataGenerator {
 			thermometer.put("value_type", "real");
 			sensors.put(thermometer);
 			
+			
+			var b = new JSONObject();
+			var a = new JSONObject();
+			var c = new JSONObject();
+			
+			b.put("sensor_name", "Counter");
+			b.put("value_name", "Number of students");
+			b.put("value_type", "natural");
+			sensors.put(b);
+			
+			a.put("sensor_name", "Change sensor");
+			a.put("value_name", "We need changes");
+			a.put("value_type", "boolean");
+			sensors.put(a);
+			
+			c.put("sensor_name", "Height misuring");
+			c.put("value_name", "Meters above sea level");
+			c.put("value_type", "integer");
+			sensors.put(c);
+			
+			
 			led.put("actuator_name", "led");
 			led.put("value_name", "turn_on");
 			led.put("value_type", "boolean");
