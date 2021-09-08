@@ -24,7 +24,7 @@ class WebrtcManager{
 	}
 
 	// send a msg to all peers
-	sendToAll(msg){
+	sendMsgToConnectedNodes(msg){
 		for(let i = 0; i < this.#peers.length; i++){
 			console.log("State: " ,this.#peers[i].getConnection().iceConnectionState);
 			if(this.#peers[i].getConnection().iceConnectionState === 'disconnected' 
@@ -105,7 +105,7 @@ class ConnectedPeer{
 		this.peerConnection.ondatachannel = (event) =>  this.#setUpChannel(event.channel);
 		this.peerConnection.oniceconnectionstatechange = (e) => {
 			if(this.peerConnection.iceConnectionState == 'disconnected'){
-				this.strategy.onDisconnected(this.channel);
+				this.strategy.onDisconnected(this.channel, this.#getChannelId());
 			}
 		};
 	}
@@ -136,10 +136,11 @@ class ConnectedPeer{
 
 	#setUpChannel(newChannel) {
 		this.channel = newChannel;
+		console.log("my channel id: " + this.channel.id + "|  my global id: "  + this.id);
 		
-		this.channel.onopen = () => this.strategy.onOpen(this.channel);
-		this.channel.onmessage = (m) => this.strategy.onMessage(m, this.channel);
-		this.channel.onclose = () => this.strategy.onClose(this.channel); 
+		this.channel.onopen = () => this.strategy.onOpen(this.channel, this.#getChannelId());
+		this.channel.onmessage = (m) => this.strategy.onMessage(m, this.channel , this.#getChannelId());
+		this.channel.onclose = () => this.strategy.onClose(this.channel , this.#getChannelId()); 
 	}
 
 	#getChannelId(){

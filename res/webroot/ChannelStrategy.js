@@ -4,35 +4,36 @@ class ChannelStrategy{
 		this.node = node;
 	}
 
-	onOpen(channel){
+	onOpen(channel, id){
+        console.log("my channel id in onopen: " + id );
 		console.log("Open a new P2P connection");
 		this.observer.notifyConnectionComplete();
 		channel.send(JSON.stringify({"type": "hello", "id": this.node.id}))
 	}
 
-	onMessage(msg, channel){
-		console.log("A messge from p2p channel " + channel.id + ":", JSON.parse(msg.data));
+	onMessage(msg, channel, id){
+		console.log("A messge from p2p channel " + id + ":", JSON.parse(msg.data));
 		let json = JSON.parse(msg.data);
 		if(json.type == "hello"){
 			console.log("Hello type");
-			this.node.addConnectedNode(channel.id, json.id);
+			this.node.addConnectedNode(id, json.id);
 		}else if(json.type == "movementTo"){
 			if(this.node.isOutOfRadius(json.x, json.y)){
 				console.log("out of radius");
-				this.node.removeConnectedNode(channel.id);
+				this.node.removeConnectedNode(id);
 				channel.close();
 			}
 		}
 	}
 
-	onClose(channel){
+	onClose(channel, id){
 		console.log("Close a P2P connection"); 
-		this.node.removeConnectedNode(channel.id);
+		this.node.removeConnectedNode(id);
 	}
 
-	onDisconnected(channel){
+	onDisconnected(channel, id){
 		console.log("disconnected");
-		this.node.removeConnectedNode(channel.id);
+		this.node.removeConnectedNode(id);
 	}
 
 }
