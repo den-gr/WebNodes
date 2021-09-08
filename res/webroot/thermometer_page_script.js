@@ -40,7 +40,7 @@ window.onload = function(){
             
             
         }       
-    }, Math.random()*10000 + 1000);
+    }, Math.random()*10000 + 15000);
 }
 
 
