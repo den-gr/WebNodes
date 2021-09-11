@@ -51,7 +51,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	}
 
 	@Override
-	public void TextMessageHandler(String message, ServerWebSocket webSocket) {
+	public void textMessageHandler(String message, ServerWebSocket webSocket) {
 		try {
 			JSONObject json = new JSONObject(message);
 			if(json.has("type")) {
@@ -115,7 +115,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 
 
 	@Override
-	public void CloseHandler(ServerWebSocket webSocket) {
+	public void closeHandler(ServerWebSocket webSocket) {
 		System.out.println("Client disconnected "+ webSocket.textHandlerID());
         if(generatorList.contains(webSocket)) {
         	generatorList.remove(webSocket);

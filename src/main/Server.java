@@ -33,8 +33,8 @@ public class Server extends AbstractVerticle {
 		server.webSocketHandler(webSocket -> {
 			System.out.println("A client is connected with handlerID: " + webSocket.textHandlerID());
 			
-			webSocket.textMessageHandler(message -> strategy.TextMessageHandler(message, webSocket));
-			webSocket.closeHandler(message -> strategy.CloseHandler(webSocket));
+			webSocket.textMessageHandler(message -> strategy.textMessageHandler(message, webSocket));
+			webSocket.closeHandler(message -> strategy.closeHandler(webSocket));
 		});
 			
 		server.requestHandler(router).listen(port);

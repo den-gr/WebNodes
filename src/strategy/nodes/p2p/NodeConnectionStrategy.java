@@ -17,7 +17,7 @@ public interface NodeConnectionStrategy {
 	Optional<Set<Integer>> findNewConnections(int id, int x, int y, Optional<Set<Integer>> connectedNodes);
 	
 	/**
-	 * @param id of node that must be removed
+	 * @param id of the node that must be removed
 	 */
-	void removeNode(int id);
+	void removeDisconnectedNode(int id);
 }

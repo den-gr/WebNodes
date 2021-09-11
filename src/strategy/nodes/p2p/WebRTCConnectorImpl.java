@@ -78,8 +78,6 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 					toBeConnected.remove(senderId);
 				}
 			}
-			
-			
 		}
 	}
 
@@ -142,7 +140,7 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 		toBeConnected.entrySet().stream()
 			.map(e -> e.getValue())
 			.forEach(list -> list.remove(Integer.valueOf(id)));
-		nodeConnectionStrategy.removeNode(id);
+		nodeConnectionStrategy.removeDisconnectedNode(id);
 	}
 
 }

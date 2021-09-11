@@ -48,7 +48,7 @@ public class NodeConnectionStrategyImpl implements NodeConnectionStrategy{
 
 
 	@Override
-	public void removeNode(int id) {
+	public void removeDisconnectedNode(int id) {
 		positionMap.remove(id);
 		
 	}
