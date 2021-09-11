@@ -1,52 +1,21 @@
 const serverURL = 'ws://localhost:8081';
+const PERIOD = Math.random()*10000 + 15000;
 //const serverURL = 'ws://1104-5-170-128-165.ngrok.io'
 let webSocket;
 
 let node;
 
-let temperatureUpdate;
-
 let connectionsManager;
 
 window.onload = function(){
-    setUpSocket();
+    webSocket = new WebSocket(serverURL);
+    setUpSocket(webSocket);
     connectionsManager = new WebrtcManager(webSocket);
-	
-    temperatureUpdate = setInterval(() => {
-        let sensors = node.getSensors();
-        if(sensors.length > 0){
-            let sensor = sensors[Math.floor(Math.random() * Math.floor(sensors.length))];
-            let plusOrMinus = Math.random() < 0.5 ? -1 : 1;
-            switch(sensor.getValueType()){
-                case "real":
-                    node.setValue(sensor.getValue() + Math.random()*plusOrMinus, sensor.sensor_name);
-                    break;
-                case "integer":
-                    node.setValue(sensor.getValue() + plusOrMinus, sensor.sensor_name);
-                    break;
-                case "natural":
-                    if(sensor.getValue() + plusOrMinus < 0){
-                        node.setValue(sensor.getValue() + 1, sensor.sensor_name);
-                    }else{
-                        node.setValue(sensor.getValue() + plusOrMinus, sensor.sensor_name);
-                    }
-                    break;
-                case "boolean":
-                    node.setValue(!sensor.getValue(), sensor.sensor_name);
-                    break;
-                default:
-                    console.error("Type of sensor value was not recognized");
-            }
-            
-            
-        }       
-    }, Math.random()*10000 + 15000);
+    setInterval(sensorsRilevation(), PERIOD);
 }
 
 
-function setUpSocket(){
-	webSocket = new WebSocket(serverURL);
-
+function setUpSocket(webSocket){
 	webSocket.onopen = () => {
             console.log('open');
             //ask for node setup
@@ -113,22 +82,44 @@ function setUpSocket(){
 function changeNodeState(json){
     if(json.id == node.id){
         if(json.device_type === "sensor"){
-            if(json.sensor_name === "thermometer"){
-                node.setTemperature(json.temperature);
-            }else{
-                console.error("Unknown sensor", json.sensor_name);
-            }
+            node.setValue(json.value, json.sensor_name);
     
         }else if(json.device_type === "actuator"){
-            if(json.actuator_name === "led"){
-                node.turnOnLed(json.turn_on);
-            }else{
-                console.error("Unknown actuator", json.sensor_name);
-            }
+            node.setValue(json.value, json.actuator_name)
         }else{
             console.error("Unknown mode for change the node's state", json.device_type);
         }
     }else{
         console.error("Wrong id", json.id);
+    }
+}
+
+function sensorsRilevation(){
+    if (typeof node !== 'undefined') {
+        let sensors = node.getSensors();
+        if(sensors.length > 0){
+            let sensor = sensors[Math.floor(Math.random() * sensors.length)];
+            let plusOrMinus = Math.random() < 0.5 ? -1 : 1;
+            switch(sensor.getValueType()){
+                case "real":
+                    node.setValue(sensor.getValue() + Math.random()*plusOrMinus, sensor.sensor_name);
+                    break;
+                case "integer":
+                    node.setValue(sensor.getValue() + plusOrMinus, sensor.sensor_name);
+                    break;
+                case "natural":
+                    if(sensor.getValue() + plusOrMinus < 0){
+                        node.setValue(sensor.getValue() + 1, sensor.sensor_name);
+                    }else{
+                        node.setValue(sensor.getValue() + plusOrMinus, sensor.sensor_name);
+                    }
+                    break;
+                case "boolean":
+                    node.setValue(!sensor.getValue(), sensor.sensor_name);
+                    break;
+                default:
+                    console.error("Type of sensor value was not recognized");
+            }  
+        }       
     }
 }
