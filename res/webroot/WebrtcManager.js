@@ -18,7 +18,7 @@ class WebrtcManager{
 	}
 
 	//Start a new connection with an peer
-	addConnection(){
+	#addConnection(){
 		this.#peers.push(new ConnectedPeer(this.#connection_id++, this.channelStrategy, this.webSocket)); 
 		this.#getLastPeer().createNewChannel();
 	}
@@ -66,10 +66,10 @@ class WebrtcManager{
 	connectionAvailable(){
 		console.log("last peer connection state",  this.#getLastPeer() ? this.#getLastPeer().getConnection().iceConnectionState : null);
 		if(!this.#getLastPeer()){
-			this.addConnection()
+			this.#addConnection()
 
 		}else if(this.#getLastPeer().getConnection().iceConnectionState === "connected"){
-			this.addConnection()
+			this.#addConnection()
 		}else{
 			this.#connectionAvailable = true;
 		}
@@ -84,7 +84,7 @@ class WebrtcManager{
 	notifyConnectionComplete(){
 		if(this.#connectionAvailable){
 			console.log("Another connections are available so go to add them");
-			this.addConnection();
+			this.#addConnection();
 			this.#connectionAvailable = false;
 		}
 	}

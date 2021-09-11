@@ -5,7 +5,6 @@ class GenericNode{
         this.id = id; 
         this.x = 0;
         this.y = 0;
-        this.temperature = 25;
         this.connectedNodes = new Map();
 
         let conf = json_configuration;
