@@ -6,12 +6,13 @@ let webSocket;
 let node;
 
 let connectionsManager;
+let rilevations;
 
 window.onload = function(){
     webSocket = new WebSocket(serverURL);
     setUpSocket(webSocket);
     connectionsManager = new WebrtcManager(webSocket);
-    setInterval(sensorsRilevation, PERIOD);
+    rilevations = setInterval(sensorsRilevation, PERIOD);
 }
 
 window.onbeforeunload = function(){
@@ -67,6 +68,9 @@ function setUpSocket(webSocket){
                     case "connection_available":
                         connectionsManager.connectionAvailable();
                         break;
+                    case "stop_sersors_rilevation":
+                        clearInterval(this.rilevations);
+                        break;
                     default:
                         console.error("Incorrect message type");
                 }
@@ -99,6 +103,7 @@ function changeNodeState(json){
 }
 
 function sensorsRilevation(){
+
     if (typeof node !== 'undefined') {
         let sensors = node.getSensors();
         if(sensors.length > 0){

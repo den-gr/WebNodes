@@ -107,6 +107,9 @@ class TestSystem {
 		wait(getSetUpDelay(node_quantity));
 		assertFalse(nodeObserver.isErrorOccured());
 		
+		ws.sendText(JSONGenerator.createStopRilevationMsg(NODE_ID_0), true);
+		wait(DELAY);
+		
 		final float newRealValue = 99.99f;
 		
 		Object currentValue = nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.REAL_SENSOR_NAME);

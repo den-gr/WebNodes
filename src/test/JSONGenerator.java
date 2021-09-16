@@ -81,5 +81,12 @@ public class JSONGenerator {
 		obj.put("value_type", valueType);
 		return obj;
 	}
+	
+	public static String createStopRilevationMsg(int id) {
+		var json = new JSONObject();
+		json.put("type", "stop_sersors_rilevation");
+		json.put("id", id);
+		return json.toString();
+	}
 
 }

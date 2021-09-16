@@ -81,20 +81,16 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 						System.out.println("Node manager msg: " +  json.toString());
 						break;
 					case "move_node":
-						routeMessageToClient(webSocket, json);
-						break;
 					case "disconnect_node":
+					case "change_node_state":
+					case "stop_sersors_rilevation":
 						routeMessageToClient(webSocket, json);
 						break;
 					case "node_configuration":
 						saveNodeConfiguration(json);
 						break;
-					case "change_node_state":
-						routeMessageToClient(webSocket, json);
-						break;
 					case "create_new_nodes":
 						CreateNewNodes(webSocket, json);
-
 						break;
 					default:
 						System.out.println("Type of message is not recognized: " + json.toString());
