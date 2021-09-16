@@ -37,7 +37,7 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 			String type = json.getJSONObject("desc").get("type").toString();
 			
 			if(type.equals("offer")) { // A client offers a connection
-				System.out.println("This is offer from " + getIdFromWebSocket(SenderWebSocket));
+				//System.out.println("This is offer from " + getIdFromWebSocket(SenderWebSocket));
 				int destinationID = toBeConnected.get(senderId).get(0);
 				clientsWebSocketMap.get(destinationID).writeTextMessage(json.toString());
 				
@@ -48,22 +48,20 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 				senderMap.get(destinationID).add(senderId);
 				
 			}else if(type.equals("answer")) { //Accepting of connection
-				System.out.println("This is answer from " + getIdFromWebSocket(SenderWebSocket));
+				//System.out.println("This is answer from " + getIdFromWebSocket(SenderWebSocket));
 				clientsWebSocketMap.get(senderMap.get(senderId).get(0)).writeTextMessage(json.toString());
 				senderMap.get(senderId).remove(0);
 			}else {
 				System.out.println("Wrong type of msg");
 			}	
 		}else if(json.has("candidate")) {
-			System.out.println("This is candidate form : "  + getIdFromWebSocket(SenderWebSocket));
-			
-			
-			
 			String candidate = json.getString("candidate");
+			//System.out.println("This is candidate form : "  + getIdFromWebSocket(SenderWebSocket) + "\n" + candidate);
+			
 			//At moment accepts only host candidate
 			if(candidate.contains("host")) {
 				int destinationID = toBeConnected.get(senderId).get(0);
-				System.out.println("host candidate");
+				System.out.println(" candidate");
 				//route second signaling message 
 				clientsWebSocketMap.get(destinationID).writeTextMessage(json.toString());
 				
@@ -72,7 +70,7 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 				
 				if(!toBeConnected.get(senderId).isEmpty()) {
 					//there are another nodes to be connected
-					System.out.println("Send available in elaborate");
+					//System.out.println("Send available in elaborate");
 					SenderWebSocket.writeTextMessage(getConnectionsAvailableMsg());
 				}else {
 					toBeConnected.remove(senderId);
@@ -115,7 +113,7 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 			}
 			
 		}else {
-			System.out.println("State JSON has not a requested field");
+			System.out.println("State JSON has not coordinates.");
 		}
 		
 	}

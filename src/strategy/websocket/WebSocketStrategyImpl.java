@@ -67,7 +67,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 						break;
 					case "generator_setup_demand":
 						generatorList.add(webSocket);
-						nodeGeneratorSetup(webSocket);
+						//nodeGeneratorSetup(webSocket);
 						System.out.println("generator_setup_demand msg: " +  json.toString());
 						break;
 					case "manager_setup_demand":
@@ -104,10 +104,10 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 			}else if(json.has("desc") || json.has("candidate")) {
 				webRTCConnector.elaborateSignalingMsg(webSocket, json);
 			}else {
-				System.out.println("JSON message must have a type");
+				System.out.println("JSON message must have a type: " +  json.toString());
 			}
 		}catch (JSONException ex) {
-			System.out.println("The message is not a JSON");
+			System.out.println("The message is not a JSON: " + message);
 		}
 		
 	}
@@ -144,8 +144,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 			}else {
 				webSocket.writeTextMessage(
 						createErrorMsg("Node with id "+ json.getInt("id") +" does not exists"));
-			}
-			
+			}	
 		}
 	}
 
@@ -218,6 +217,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 			
 			var list = new LinkedList<JSONObject>();
 			list.add(json);
+			System.out.println("Send Configuration");
 			
 			eBus.publish(CHANEL_M, createNodesConfigurationMsg(list));
 		}else {
@@ -244,8 +244,8 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	
 	private String createNodesConfigurationMsg(Collection<JSONObject> confList) {
 		return new JSONObject()
-				.put("type", "nodes_configuration")
-				.put("conf", new JSONArray(confList)).toString();
+				.put("type", "nodes_configurations")
+				.put("configurations", new JSONArray(confList)).toString();
 	}
 
 }

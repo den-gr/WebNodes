@@ -43,7 +43,6 @@ public class NodeConnectionStrategyImpl implements NodeConnectionStrategy{
 		}
 		System.out.println("Position Map" + positionMap);
 		return node.getNotConnectedNodesId(nodesInRadius);
-		
 	}
 
 
