@@ -29,7 +29,7 @@ class TestSystem {
 	final static int RADIUS = 50;
 	
 	final static int DELAY = 100;
-	final static int LONG_DELAY = 1000;
+	final static int LONG_DELAY = 1500;
 	
 	final static String SENSOR = "sensor";
 	final static String ACTUATOR = "actuator";
@@ -135,7 +135,7 @@ class TestSystem {
 		
 		currentValue = nodeObserver.getNodeState(NODE_ID_1).getValue(JSONGenerator.BOOLEAN_ACTUATOR_NAME);
 		assertTrue(currentValue instanceof Boolean);
-		assertEquals(currentValue, (boolean)newBooleanValue);
+		assertEquals((boolean)currentValue, newBooleanValue);
 	}
 	
 	
@@ -192,16 +192,27 @@ class TestSystem {
 		assertTrue(nodeState_2.getConnectedNodes().contains(NODE_ID_0));
 		assertTrue(nodeState_2.getConnectedNodes().contains(NODE_ID_1));
 		
-		newCoordinate = 2;
-		ws.sendText(JSONGenerator.getMoveNodeMsg(NODE_ID_0, newCoordinate, newCoordinate), true);
-		wait(DELAY);
+		final int newCoordinate_X = -15;
+		final int newCoordinate_Y = 0;
+		ws.sendText(JSONGenerator.getMoveNodeMsg(NODE_ID_0, newCoordinate_X, newCoordinate_Y), true);
+		wait(LONG_DELAY);
 		
-		assertEquals(nodeState_0.getX(), newCoordinate);
-		assertEquals(nodeState_0.getY(), newCoordinate);
+		assertEquals(nodeState_0.getX(), newCoordinate_X);
+		assertEquals(nodeState_0.getY(), newCoordinate_Y);
 		
-		assertEquals(nodeState_0.getConnectedNodes().size(), 2);
+		assertEquals(nodeState_0.getConnectedNodes().size(), 1);
 		assertEquals(nodeState_1.getConnectedNodes().size(), 2);
-		assertEquals(nodeState_2.getConnectedNodes().size(), 2);
+		assertEquals(nodeState_2.getConnectedNodes().size(), 1);
+		
+		
+		ws.sendText(JSONGenerator.getDisconnectNodeMsg(NODE_ID_0), true);
+		wait(LONG_DELAY);
+		assertEquals(node_quantity-1, nodeObserver.getNumberOfNodes());
+		
+		assertEquals(nodeState_1.getConnectedNodes().size(), 1);
+		assertEquals(nodeState_2.getConnectedNodes().size(), 1);
+		
+		
 	}
 	
 	@Test
@@ -245,7 +256,7 @@ class TestSystem {
 		int integerValue = ((Integer) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.INTEGER_SENSOR_NAME));
 		boolean booleanValue = (Boolean) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.BOOLEAN_ACTUATOR_NAME);
 		
-		wait(25000);
+		wait(11000);
 		assertFalse(realValue ==  ((Integer) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.REAL_SENSOR_NAME)).floatValue()
 				&& naturalValue == (Integer) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.NATURAL_SENSOR_NAME)
 				&& integerValue == (Integer) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.INTEGER_SENSOR_NAME)
