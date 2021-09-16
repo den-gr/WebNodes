@@ -109,6 +109,7 @@ public class NodeDataGenerator {
 			obj.put("sensors", sensors);
 			obj.put("actuators", actuators);
 			obj.put("radius", radius);
+			obj.put("type", "node_configuration");
 			return obj;
 			
 		}
