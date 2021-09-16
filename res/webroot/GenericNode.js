@@ -1,5 +1,5 @@
 class GenericNode{
-   
+   static CONNECTIONS = "CONNECTIONS";
     constructor(id, json_configuration, webSocket, webrtcManager){
         this.isSetUp = false;
         this.id = id; 
@@ -89,22 +89,33 @@ class GenericNode{
         return null;
     }
 
-    notifyState(){
-        let obj = 
+    notifyState(type){
+        let stateJSON;
+        if(type === GenericNode.CONNECTIONS){
+            stateJSON = 
+            {"type": "node_state",
+            "id": this.id, 
+            "connected_nodes_id": this.#getArrayWithConnectedNodesId()
+            };
+        }else{
+            stateJSON = 
             {"type": "node_state",
             "id": this.id, 
             "x": this.x, 
             "y": this.y,
             "connected_nodes_id": this.#getArrayWithConnectedNodesId()
             };
-        this.sensors.forEach(sensor => {
-            obj[sensor.value_name] = sensor.value;
-        });
-        this.actuators.forEach(actuator => {
-            obj[actuator.value_name] = actuator.value;
-        });
-        this.webSocket.send("test");
-        this.webSocket.send(JSON.stringify(obj));
+            let devices_state = {};
+            this.sensors.forEach(sensor => {
+                devices_state[sensor.value_name] = sensor.value;
+            });
+            this.actuators.forEach(actuator => {
+                devices_state[actuator.value_name] = actuator.value; 
+            });
+            stateJSON["devices_state"] =  devices_state;
+        }
+        
+        this.webSocket.send(JSON.stringify(stateJSON));
     }
 
     setNewCoordinates(x, y){
@@ -118,13 +129,13 @@ class GenericNode{
 
     addConnectedNode(channelId, nodeId){
         this.connectedNodes.set(channelId, nodeId);
-        this.notifyState();
+        this.notifyState(GenericNode.CONNECTIONS);
         this.#updateConnectedNodeslabel();
     }
 
     removeConnectedNode(channelId){
         this.connectedNodes.delete(channelId);
-        this.notifyState();
+        this.notifyState(GenericNode.CONNECTIONS);
         this.#updateConnectedNodeslabel();
     }
 

@@ -11,8 +11,12 @@ window.onload = function(){
     webSocket = new WebSocket(serverURL);
     setUpSocket(webSocket);
     connectionsManager = new WebrtcManager(webSocket);
-    setInterval(sensorsRilevation(), PERIOD);
+    setInterval(sensorsRilevation, PERIOD);
 }
+
+window.onbeforeunload = function(){
+    connectionsManager.sendMsgToConnectedNodes(JSON.stringify({"type": "close_connection"}));
+};
 
 
 function setUpSocket(webSocket){
@@ -33,19 +37,19 @@ function setUpSocket(webSocket){
                 switch(json.type){
                     case "node_setup":
                         if(node == null){
-
                             node = new GenericNode(json.id, json.node_configuration, webSocket, connectionsManager);
                             connectionsManager.setStrategy(new ChannelStrategy(connectionsManager, node));
                             if(node.ifConfigurationValid()){
+                                node.sendNodeConfiguration();
                                 console.log("Node is valid");
                                 node.setNewCoordinates(json.x, json.y);
-                                node.sendNodeConfiguration();
+                                
                             }else{
-                                console.error("node configuration is not valid");
+                                console.error("Node configuration is not valid");
                                 node = null;
                             }
                         }else{
-                            console.error("Can't create a new node, because it is already exists")
+                            console.error("Can't create a new node, because it is already exists");
                         }
                         break;
                     case "notify_state":

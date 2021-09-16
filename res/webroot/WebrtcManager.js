@@ -54,7 +54,7 @@ class WebrtcManager{
 				console.log('Unsupported SDP type.');
 			}
 
-		}else if(json.candidate){ // receive an handshake candidate from another peer
+		}else if(json.candidate){ // receive an ice candidate from another peer
 			console.log("received candidate: ");
 			await this.#getLastPeer().getConnection().addIceCandidate(json);
 		}else{
@@ -95,12 +95,12 @@ class WebrtcManager{
  */
 class ConnectedPeer{
 	static STUN_SERVER_URL = 'stun:stun.l.google.com:19302';
-	constructor(id, strategy, serverChannel){
-		this.serverChannel = serverChannel;
+	constructor(id, strategy, serverWebSocket){
+		this.serverWebSocket = serverWebSocket;
 		this.strategy = strategy;
 		this.id = id;
 		
-		let configuration = {iceServers: [{url: ConnectedPeer.STUN_SERVER_URL}]};
+		let configuration = {iceServers: [{urls: ConnectedPeer.STUN_SERVER_URL}]};
 		this.peerConnection =  new RTCPeerConnection(configuration);
 		this.peerConnection.ondatachannel = (event) =>  this.#setUpChannel(event.channel);
 		this.peerConnection.oniceconnectionstatechange = (e) => {
@@ -112,10 +112,10 @@ class ConnectedPeer{
 	
 	//Create a new channel
 	createNewChannel(){
-		this.#setUpChannel(this.peerConnection.createDataChannel("Channel", {id: this.#getChannelId()}));
+		this.#setUpChannel(this.peerConnection.createDataChannel("Channel" + this.#getChannelId()));
 
 		// Send any ice candidates to the other peer.
-		this.peerConnection.onicecandidate = e => {if(e.candidate != null) this.serverChannel.send(JSON.stringify(e.candidate))}
+		this.peerConnection.onicecandidate = e => {if(e.candidate != null) this.serverWebSocket.send(JSON.stringify(e.candidate))}
 
 		// Let the "negotiationneeded" event trigger offer generation.
 		this.peerConnection.onnegotiationneeded = async () => {
@@ -123,7 +123,7 @@ class ConnectedPeer{
 				await this.peerConnection.setLocalDescription(await this.peerConnection.createOffer());
 				// Send the offer to the other peer.
 				let obj = {desc: this.peerConnection.localDescription};
-				this.serverChannel.send(JSON.stringify(obj));
+				this.serverWebSocket.send(JSON.stringify(obj));
 			} catch (err) {
 				console.error(err);
 			}
@@ -136,11 +136,24 @@ class ConnectedPeer{
 
 	#setUpChannel(newChannel) {
 		this.channel = newChannel;
-		console.log("my channel id: " + this.channel.id + "|  my global id: "  + this.id);
+		console.log("my channel id: " + this.#getChannelId() + "|  my global id: "  + this.#getChannelId());
 		
 		this.channel.onopen = () => this.strategy.onOpen(this.channel, this.#getChannelId());
 		this.channel.onmessage = (m) => this.strategy.onMessage(m, this.channel , this.#getChannelId());
 		this.channel.onclose = () => this.strategy.onClose(this.channel , this.#getChannelId()); 
+
+		this.channel.onerror = function(event) {
+			console.error(
+			  'Network Error. The error "' + event.error + '" occurred while handling player control network messages. ' + "\n" +
+			  event.filename +  "\n" +
+			  event.lineno +  "\n" +
+			  event.colno +  "\n" + "Event : "+ event
+			);
+		  }
+
+		//   this.channel.onclose = ev => {
+		// 	this.peerConnection.close();
+		//   }
 	}
 
 	#getChannelId(){

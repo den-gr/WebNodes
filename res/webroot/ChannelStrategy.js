@@ -21,8 +21,11 @@ class ChannelStrategy{
 			if(this.node.isOutOfRadius(json.x, json.y)){
 				console.log("out of radius");
 				this.node.removeConnectedNode(id);
+				channel.send(JSON.stringify({"type": "close_connection"}));
 				channel.close();
 			}
+		}else if(json.type == "close_connection"){
+			channel.close();
 		}
 	}
 
@@ -35,5 +38,4 @@ class ChannelStrategy{
 		console.log("disconnected");
 		this.node.removeConnectedNode(id);
 	}
-
 }
