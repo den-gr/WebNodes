@@ -13,7 +13,7 @@ class GenericNode{
             if(Number.isInteger(conf.radius) && conf.radius > 0){
                 this.radius = conf.radius;
             }else{
-                console.log("Not accept configuration radius");
+                console.error("Not accept configuration radius");
             }
 
             if(Array.isArray(conf.sensors) && Array.isArray(conf.actuators)){
@@ -29,7 +29,7 @@ class GenericNode{
 
 
             }else{
-                console.log("Not accept configuration of sensors or actuators");
+                console.error("Not accept configuration of sensors or actuators");
             }
         }
 
@@ -44,7 +44,7 @@ class GenericNode{
             document.getElementById("h1").innerHTML =  conf.node_name + " " +  this.id;
             
         }else{
-            console.log("Configuration failed");
+            console.error("Configuration failed");
         }
         
         this.xLabel = document.getElementById("xx");
@@ -166,10 +166,6 @@ class GenericNode{
     sendNodeConfiguration(){
         this.webSocket.send(JSON.stringify(this.configuration));
     }
-
-    ifConfigurationValid(){
-        return typeof this.configuration !== 'undefined';
-    }
 }
 
 class Device{
@@ -177,13 +173,9 @@ class Device{
     constructor(value_name, value_type){
         this.value_name = value_name;
         this.value_type = value_type;
-        this.value = this.getDefaultValue(this.value_type);
+        this.setValue(value_type === "boolean" ? false : 0);
     }
 
-    getDefaultValue(value_type){
-        return value_type === "boolean" ? false : 0;
-
-    }
 
     setValue(new_value){
         switch(this.value_type){
@@ -202,8 +194,10 @@ class Device{
             default:
                 console.error("Type of sensor value was not recognized");
         }
-        this.span.innerText = this.value;
-        
+        if(this.span){
+            this.span.innerText = this.value;
+        }
+       
     }
 
     getValue(){
@@ -240,6 +234,7 @@ class Actuator extends Device{
         super(value_name, value_type);
         this.actuator_name = actuator_name;
         super.setHTML(this.actuator_name);
+       
     }
 }
 

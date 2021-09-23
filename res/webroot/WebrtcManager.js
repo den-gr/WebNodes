@@ -94,14 +94,14 @@ class WebrtcManager{
  * A class that incapsulate a single connection with an peer
  */
 class ConnectedPeer{
-	static STUN_SERVER_URL = 'stun:stun.l.google.com:19302';
+	//static STUN_SERVER_URL = 'stun:stun.l.google.com:19302';
 	constructor(id, strategy, serverWebSocket){
 		this.serverWebSocket = serverWebSocket;
 		this.strategy = strategy;
 		this.id = id;
 		
-		let configuration = {iceServers: [{urls: ConnectedPeer.STUN_SERVER_URL}]};
-		this.peerConnection =  new RTCPeerConnection(configuration);
+		//let configuration = {iceServers: [{urls: ConnectedPeer.STUN_SERVER_URL}]};
+		this.peerConnection =  new RTCPeerConnection(/*configuration*/);
 		this.peerConnection.ondatachannel = (event) =>  this.#setUpChannel(event.channel);
 		this.peerConnection.oniceconnectionstatechange = (e) => {
 			if(this.peerConnection.iceConnectionState == 'disconnected'){
@@ -136,7 +136,7 @@ class ConnectedPeer{
 
 	#setUpChannel(newChannel) {
 		this.channel = newChannel;
-		console.log("my channel id: " + this.#getChannelId() + "|  my global id: "  + this.#getChannelId());
+		console.log("my channel id: " + this.#getChannelId() + "|  my global id: "  + this.channel.id);
 		
 		this.channel.onopen = () => this.strategy.onOpen(this.channel, this.#getChannelId());
 		this.channel.onmessage = (m) => this.strategy.onMessage(m, this.channel , this.#getChannelId());
@@ -150,10 +150,6 @@ class ConnectedPeer{
 			  event.colno +  "\n" + "Event : "+ event
 			);
 		  }
-
-		//   this.channel.onclose = ev => {
-		// 	this.peerConnection.close();
-		//   }
 	}
 
 	#getChannelId(){

@@ -257,7 +257,9 @@ class TestSystem {
 		boolean booleanValue = (Boolean) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.BOOLEAN_ACTUATOR_NAME);
 		
 		wait(11000);
-		assertFalse(realValue ==  ((Integer) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.REAL_SENSOR_NAME)).floatValue()
+		var obj = nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.REAL_SENSOR_NAME);
+		final float newRealValue =  obj instanceof Integer ? ((Integer) obj).floatValue() : ((BigDecimal) obj).floatValue();
+		assertFalse(realValue ==  newRealValue
 				&& naturalValue == (Integer) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.NATURAL_SENSOR_NAME)
 				&& integerValue == (Integer) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.INTEGER_SENSOR_NAME)
 				&& booleanValue == (Boolean) nodeObserver.getNodeState(NODE_ID_0).getValue(JSONGenerator.BOOLEAN_ACTUATOR_NAME));

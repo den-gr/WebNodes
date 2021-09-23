@@ -27,7 +27,7 @@ function setUpSocket(webSocket){
             webSocket.send(JSON.stringify({"type": "node_setup_demand"}));
     }
 	webSocket.onclose = () => console.log('close');
-	webSocket.onerror = () => console.log('error', error.message);
+	webSocket.onerror = (error) => console.log('error', error.message);
 
 	webSocket.onmessage = function(msg) {
 		console.log('message: ', msg.data);
@@ -40,15 +40,8 @@ function setUpSocket(webSocket){
                         if(node == null){
                             node = new GenericNode(json.id, json.node_configuration, webSocket, connectionsManager);
                             connectionsManager.setStrategy(new ChannelStrategy(connectionsManager, node));
-                            if(node.ifConfigurationValid()){
-                                node.sendNodeConfiguration();
-                                console.log("Node is valid");
-                                node.setNewCoordinates(json.x, json.y);
-                                
-                            }else{
-                                console.error("Node configuration is not valid");
-                                node = null;
-                            }
+                            node.sendNodeConfiguration();
+                            node.setNewCoordinates(json.x, json.y);
                         }else{
                             console.error("Can't create a new node, because it is already exists");
                         }

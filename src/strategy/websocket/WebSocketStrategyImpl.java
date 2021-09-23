@@ -89,8 +89,8 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 					case "node_configuration":
 						saveNodeConfiguration(json);
 						break;
-					case "create_new_nodes":
-						CreateNewNodes(webSocket, json);
+					case "set_configuration":
+						setConfiguration(webSocket, json);
 						break;
 					default:
 						System.out.println("Type of message is not recognized: " + json.toString());
@@ -154,7 +154,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		
 	}
 	
-	private void CreateNewNodes(ServerWebSocket webSocket, JSONObject json) {
+	private void setConfiguration(ServerWebSocket webSocket, JSONObject json) {
 		int cols = json.has("cols") ? json.getInt("cols") : COLUMNS;
 		int stepX = json.has("stepX") ? json.getInt("stepX") : STEP_X;
 		int stepY = json.has("stepY") ? json.getInt("stepY") : STEP_Y;

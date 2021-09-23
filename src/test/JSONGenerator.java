@@ -30,7 +30,7 @@ public class JSONGenerator {
 		configuration.put("type", "node_configuration");
 		
 		
-		json.put("type", "create_new_nodes");
+		json.put("type", "set_configuration");
 		json.put("configuration", configuration);
 		json.put("node_quantity", node_quantity);
 		json.put("cols", cols);
