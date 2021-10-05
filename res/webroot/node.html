@@ -29,15 +29,101 @@
             #ledbox > div:not(.led_on){
                 background-color: grey;
             }
-
-
             
             #ledbox{
                 display: flex;
             }
 
             span{
-                color: darkblue;
+                color: #b83b4a;
+                font-weight: bold;
+                transition-property: background-color, opacity;
+                transition-duration:  1s;
+                max-height: 300px;
+            }
+
+            span.pre-animation {
+                background-color: #faeb6a;
+                opacity:20;
+                max-height: 0;
+            }
+
+            body {
+                background-color: #bbe6f7;
+                margin-left: 15px;
+            }
+
+            #connected_nodes_id{
+                list-style-type: none;
+                margin-top: 1px;
+                margin-bottom: 1px;
+                padding-left: 10px;
+                background-color: #aad1e0;
+                height: 100%;
+                width: auto;
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+
+
+            ul#connected_nodes_id:before{
+                content:attr(aria-label);
+                font-size:120%;
+                font-weight:bold;
+                /* height: 50px;    */
+            }
+
+            #sensors_list:before, #actuators_list:before{
+                content:attr(aria-label);
+                font-weight:bold;
+                
+            }
+
+            .devices_list{
+                padding-left: 0px;
+            }
+
+            .devices_list li{
+                margin-left: 30px;
+            }
+
+            .node {
+                margin-top: none;
+                line-height: 30px;
+                width:  25px;
+                padding-left: 4px;
+                padding-right: 4px;
+                border-radius: 50%;
+                background-color: #faed7d;
+                border-width: 2px;
+                border-style: solid;
+                border-color: #fc8291;
+                margin-left: 5px;
+                margin-right: 5px;
+                text-align: center;
+
+                /* justify-content: center; */
+                /* align-items: center; */
+                display: inline-block;
+                
+                vertical-align: middle;
+
+                animation: opacityOn 1s normal forwards;
+                opacity: 0;
+
+            }
+
+            @keyframes opacityOn {
+                0% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            #node_container p{
+                font-size: 110%;
                 font-weight: bold;
             }
 
@@ -47,16 +133,14 @@
     <body>
         <h1 id="h1">This is the smart thermometer</h1>
         <div id="node_container">
-            <!-- <div id="ledbox">
-                <p>Led: </p>
-                <div id="led"></div>
-            </div> -->
             <p>
                 Coordinates: 
-                (<span id="xx">.</span>;
+                (<span id="xx">.</span>,
                 <span id="yy">.</span>)   
-            </p>
-            <p>Connected nodes id: <span id="connected_nodes_id">[]</span></p>
+            </p>  
+            <ul id="connected_nodes_id" aria-label="Connected nodes id: "></ul>
+            <ul id="sensors_list" class="devices_list" aria-label="Sensors: "></ul>
+            <ul id="actuators_list" class="devices_list" aria-label="Actuators: "></ul>
         </div>
     </body>
 </html>

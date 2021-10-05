@@ -121,8 +121,11 @@ class GenericNode{
     setNewCoordinates(x, y){
         this.x = x;
         this.y = y;
-        this.xLabel.innerText = x;
-        this.yLabel.innerText = y;
+        this.xLabel.classList.add('pre-animation');
+        this.yLabel.classList.add('pre-animation');
+           
+        setTimeout(func, 1000, this.xLabel, x);
+        setTimeout(func, 1000, this.yLabel, y);
         this.webrtcManager.sendMsgToConnectedNodes(JSON.stringify({"type": "movementTo", "x": this.x, "y": this.y}));
         this.notifyState();
     }
@@ -130,13 +133,21 @@ class GenericNode{
     addConnectedNode(channelId, nodeId){
         this.connectedNodes.set(channelId, nodeId);
         this.notifyState(GenericNode.CONNECTIONS);
-        this.#updateConnectedNodeslabel();
+
+        let li = document.createElement('li');
+        li.id = "nodeId" + nodeId;
+        li.innerText = nodeId;
+        li.classList.add("node");
+        this.connectedNodesLable.appendChild(li)
     }
 
     removeConnectedNode(channelId){
-        this.connectedNodes.delete(channelId);
-        this.notifyState(GenericNode.CONNECTIONS);
-        this.#updateConnectedNodeslabel();
+        if(typeof this.connectedNodes.get(channelId) !== "undefined"){
+            let elem = document.getElementById("nodeId" + this.connectedNodes.get(channelId));
+            elem.remove();
+            this.connectedNodes.delete(channelId);
+            this.notifyState(GenericNode.CONNECTIONS);
+        }   
     }
 
     //return true if a point with coordinates (nodeX; nodeY) is outside of radius of node
@@ -144,10 +155,6 @@ class GenericNode{
         return Math.hypot(this.x-nodeX, this.y-nodeY) > this.radius;
     }
 
-    // Update web page
-    #updateConnectedNodeslabel(){
-        this.connectedNodesLable.innerText = this.#getArrayWithConnectedNodesId(); 
-    }
 
     // return an array with id of the connected nodes
     #getArrayWithConnectedNodesId(){
@@ -174,6 +181,12 @@ class Device{
         this.value_name = value_name;
         this.value_type = value_type;
         this.setValue(value_type === "boolean" ? false : 0);
+
+        // this.func = sp => {
+        //     sp.classList.remove('pre-animation')
+        //     sp.innerText = this.value;
+            
+        // }
     }
 
 
@@ -195,10 +208,15 @@ class Device{
                 console.error("Type of sensor value was not recognized");
         }
         if(this.span){
-            this.span.innerText = this.value;
+            this.span.classList.add('pre-animation');
+           
+            setTimeout(func, 1000, this.span, this.value);
         }
        
     }
+
+  
+  
 
     getValue(){
         return this.value;
@@ -208,14 +226,16 @@ class Device{
         return this.value_type;
     }
 
-    setHTML(name){
-        let p = document.createElement('p');
+    setHTML(name, sensor){
+        let p = document.createElement('li');
         this.span = document.createElement('span');
         this.span.id = this.value_name;
         this.span.innerText = this.value;
         p.innerText = "["+ name.toUpperCase() + "]: " + this.value_name + " ";
         p.appendChild(this.span);
-        document.getElementById("node_container").appendChild(p);
+        
+        let html_list_id = sensor ? "sensors_list" : "actuators_list";
+        document.getElementById(html_list_id).appendChild(p);
     }
 }
 
@@ -224,7 +244,7 @@ class Sensor extends Device{
     constructor(sensor_name, value_name, value_type){
         super(value_name, value_type);
         this.sensor_name = sensor_name;
-        super.setHTML(this.sensor_name);
+        super.setHTML(this.sensor_name, true);
     }
 }
 
@@ -233,8 +253,13 @@ class Actuator extends Device{
     constructor(actuator_name, value_name, value_type){
         super(value_name, value_type);
         this.actuator_name = actuator_name;
-        super.setHTML(this.actuator_name);
+        super.setHTML(this.actuator_name, false);
        
     }
 }
 
+function func(sp, vl){
+    sp.classList.remove('pre-animation')
+    sp.innerText = vl;
+    
+}

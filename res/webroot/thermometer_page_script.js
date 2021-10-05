@@ -1,5 +1,5 @@
 const serverURL = 'ws://localhost:8081';
-const PERIOD = Math.random()*5000 + 5000;
+const PERIOD = Math.random()*3000 + 5000;
 //const serverURL = 'ws://1104-5-170-128-165.ngrok.io'
 let webSocket;
 
