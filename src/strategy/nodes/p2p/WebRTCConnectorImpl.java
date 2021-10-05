@@ -1,6 +1,5 @@
 package strategy.nodes.p2p;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -27,6 +26,7 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 		this.senderMap = new HashMap<>();
 		this.toBeConnected = new HashMap<>();
 		this.nodeConnectionStrategy = new NodeConnectionStrategyImpl(nodeRadius);
+		System.out.println("New radius: " + nodeRadius);
 	}
 
 	@Override

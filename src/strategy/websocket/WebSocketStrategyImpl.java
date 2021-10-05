@@ -158,12 +158,14 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		int cols = json.has("cols") ? json.getInt("cols") : COLUMNS;
 		int stepX = json.has("stepX") ? json.getInt("stepX") : STEP_X;
 		int stepY = json.has("stepY") ? json.getInt("stepY") : STEP_Y;
-		int radius = json.has("radius") ? json.getInt("radius") : RADIUS;
+		
 		
 		var configuration =  json.has("configuration")? json.getJSONObject("configuration") : null;
 		
+		int radius = configuration != null && configuration.has("radius") ? configuration.getInt("radius") : RADIUS;
+		
 		nodesDataGenerator =  new NodeDataGenerator(cols, stepX, stepY, radius, configuration);
-		webRTCConnector = new WebRTCConnectorImpl(clientsWebSocketMap, RADIUS);
+		webRTCConnector = new WebRTCConnectorImpl(clientsWebSocketMap, radius);
 		
 		if(json.has("node_quantity")) {
 			if(generatorList.isEmpty()) {
