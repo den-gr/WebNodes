@@ -3,6 +3,11 @@ package strategy.nodes.p2p;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * 
+ * Encapsulate the logic of connections between nodes
+ *
+ */
 public interface NodeConnectionStrategy {
 	
 	/**

@@ -16,8 +16,8 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 	//Standard messages
 	private final static JSONObject connectionsAvailableMsg = new JSONObject().put("type", "connection_available");
 	
-	private final Map<Integer, ServerWebSocket> clientsWebSocketMap; // this is a reference
-	private final Map<Integer, List<Integer>> toBeConnected; // <nodeId, list of nodes' id that must be connected to the node> 
+	private final Map<Integer, ServerWebSocket> clientsWebSocketMap; // this is a reference to map
+	private final Map<Integer, List<Integer>> toBeConnected; // <nodeId, list of nodes id that must be connected to the node> 
 	private final Map<Integer, List<Integer>> senderMap; //<nodeId that receive offer, nodeId that send webRTC offer>
 	private final NodeConnectionStrategy nodeConnectionStrategy;
 	
@@ -101,7 +101,7 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 									updatedConnectedNodesSet == null ? Optional.empty() : Optional.of(updatedConnectedNodesSet));
 
 			
-			if(nodesIdToConnect.isPresent()) { // if there are new nodes that must be connected
+			if(nodesIdToConnect.isPresent()) { // if there are a new nodes that must be connected
 				System.out.println(">>>Nodes ID to connect:" + nodesIdToConnect + " | for node " + id);
 				if(toBeConnected.containsKey(id)){
 					toBeConnected.get(id).addAll(nodesIdToConnect.get());

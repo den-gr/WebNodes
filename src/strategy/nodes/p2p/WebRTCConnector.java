@@ -4,6 +4,11 @@ import org.json.JSONObject;
 
 import io.vertx.core.http.ServerWebSocket;
 
+/**
+ * 
+ * Helps interconnect nodes with WebRTC
+ *
+ */
 public interface WebRTCConnector {
 	
 	/**

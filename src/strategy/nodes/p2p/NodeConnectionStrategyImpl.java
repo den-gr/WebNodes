@@ -31,7 +31,6 @@ public class NodeConnectionStrategyImpl implements NodeConnectionStrategy{
 		node.setX(x);
 		node.setY(y);
 		
-		
 		Set<Integer> nodesInRadius = positionMap.entrySet().stream()
 			.map(e -> e.getValue())
 			.filter(v -> v.getDistance(x, y) <= radius)

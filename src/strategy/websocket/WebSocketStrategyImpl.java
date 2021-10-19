@@ -17,7 +17,7 @@ import strategy.nodes.p2p.WebRTCConnectorImpl;
 import utils.NodeDataGenerator;
 
 public class WebSocketStrategyImpl implements WebSocketStrategy {
-	private final static String CHANEL_M = "generator";
+	private final static String CHANEL_M = "manager";
 	private final static int COLUMNS = 3;
 	private final static int STEP_X = 20;
 	private final static int STEP_Y = 20;
@@ -133,6 +133,11 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
         }
 	}
 	
+	/**
+	 * Route a msg to an client
+	 * @param webSocket of sender
+	 * @param json that must contains an id of client
+	 */
 	private void routeMessageToClient(ServerWebSocket webSocket, JSONObject json) {
 		if(managerList.contains(webSocket)) {
 			if(clientsWebSocketMap.containsKey(json.getInt("id"))) {
@@ -144,6 +149,10 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		}
 	}
 
+	
+	// Would be used for create nodes on multiple hosts with generators.
+	// For exemple: when 2 generator are open, and must be created 10 nodes, so each generator can create 5 nodes
+	// Before implement this feature is needed to fix the concurrent node connection issue
 	private void nodeGeneratorSetup(ServerWebSocket webSocket) {
 		//to do 
 		JSONObject obj = new JSONObject();
@@ -208,6 +217,11 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		}
 	}
 	
+	/**
+	 * Save in "cache" the configuration of node
+	 * if a new manager will be connected all nodes configurations will be send to it from "cache"
+	 * @param json with node configuration
+	 */
 	private void saveNodeConfiguration(JSONObject json) {
 		if(json.getString("type").equals("node_configuration") && json.has("id")) {
 			json.remove("type");
