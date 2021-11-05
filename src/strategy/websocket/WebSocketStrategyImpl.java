@@ -67,7 +67,6 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 						break;
 					case "generator_setup_demand":
 						generatorList.add(webSocket);
-						//nodeGeneratorSetup(webSocket);
 						System.out.println("generator_setup_demand msg: " +  json.toString());
 						break;
 					case "manager_setup_demand":
@@ -92,18 +91,20 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 					case "set_configuration":
 						setConfiguration(webSocket, json);
 						break;
+					case "signaling":
+						routeMessageToClient(webSocket, json);
+						break;
 					default:
 						System.out.println("Type of message is not recognized: " + json.toString());
 						webSocket.writeTextMessage(createErrorMsg("Type of message is not recognized"));
 				}
-				
-			}else if(json.has("desc") || json.has("candidate")) {
-				webRTCConnector.elaborateSignalingMsg(webSocket, json);
 			}else {
+				webSocket.writeTextMessage(createErrorMsg("JSON message must have a type"));
 				System.out.println("JSON message must have a type: " +  json.toString());
 			}
 		}catch (JSONException ex) {
-			System.out.println("The message is not a JSON: " + message);
+			webSocket.writeTextMessage(createErrorMsg("The message is not a JSON"));
+			System.out.println("The message is not a JSON: " + message + " | \n Exception: " + ex.getMessage());
 		}
 		
 	}
@@ -139,29 +140,16 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	 * @param json that must contains an id of client
 	 */
 	private void routeMessageToClient(ServerWebSocket webSocket, JSONObject json) {
-		if(managerList.contains(webSocket)) {
-			if(clientsWebSocketMap.containsKey(json.getInt("id"))) {
-				clientsWebSocketMap.get(json.getInt("id")).writeTextMessage(json.toString());
-			}else {
-				webSocket.writeTextMessage(
-						createErrorMsg("Node with id "+ json.getInt("id") +" does not exists"));
-			}	
-		}
+		if( json.has("id") && clientsWebSocketMap.containsKey(json.getInt("id"))) {
+			clientsWebSocketMap.get(json.getInt("id")).writeTextMessage(json.toString());
+		}else if(json.has("receiver_id") &&  clientsWebSocketMap.containsKey(json.getInt("receiver_id"))){
+			clientsWebSocketMap.get(json.getInt("receiver_id")).writeTextMessage(json.toString());
+		}else {
+			webSocket.writeTextMessage(
+					createErrorMsg("Node with id "+ json.getInt("id") +" is not connected to the server"));
+		}	
 	}
 
-	
-	// Would be used for create nodes on multiple hosts with generators.
-	// For exemple: when 2 generator are open, and must be created 10 nodes, so each generator can create 5 nodes
-	// Before implement this feature is needed to fix the concurrent node connection issue
-	private void nodeGeneratorSetup(ServerWebSocket webSocket) {
-		//to do 
-		JSONObject obj = new JSONObject();
-		obj.put("type", "generator_setup");
-		obj.put("node_quantity", 2);
-		
-		webSocket.writeTextMessage(obj.toString());
-		
-	}
 	
 	private void setConfiguration(ServerWebSocket webSocket, JSONObject json) {
 		int cols = json.has("cols") ? json.getInt("cols") : COLUMNS;
@@ -188,12 +176,26 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 				serverWebSocket.writeTextMessage(obj.toString());
 			}
 			
+			int node_quantity = json.getInt("node_quantity");
 			JSONObject createNodeMsg = new JSONObject();
 			createNodeMsg.put("type", "generator_setup");
-			createNodeMsg.put("node_quantity", json.getInt("node_quantity"));
+			createNodeMsg.put("node_quantity", node_quantity / generatorList.size());
 			
-			//at moment use only one generator
-			generatorList.get(0).writeTextMessage(createNodeMsg.toString());
+			if(node_quantity % generatorList.size() ==  0) {
+				generatorList.forEach(generator -> {
+					generator.writeTextMessage(createNodeMsg.toString());
+				});
+			}else {
+				JSONObject createNodeMsgWithRest = new JSONObject();
+				createNodeMsgWithRest.put("type", "generator_setup");
+				createNodeMsgWithRest.put("node_quantity", (node_quantity / generatorList.size()) +
+												   		   (node_quantity % generatorList.size()));
+				
+				generatorList.get(0).writeTextMessage(createNodeMsgWithRest.toString());
+				for(int i = 1; i < generatorList.size(); i++) {
+					generatorList.get(i).writeTextMessage(createNodeMsg.toString());
+				}
+			}
 		}
 	}
 	

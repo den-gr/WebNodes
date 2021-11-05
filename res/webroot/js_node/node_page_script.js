@@ -39,7 +39,8 @@ function setUpSocket(webSocket){
                     case "node_setup":
                         if(node == null){
                             node = new GenericNode(json.id, json.node_configuration, webSocket, connectionsManager);
-                            connectionsManager.setStrategy(new ChannelStrategy(connectionsManager, node));
+                            connectionsManager.setStrategy(new ChannelStrategy(node));
+                            connectionsManager.setLocalNodeId(node.id);
                             node.sendNodeConfiguration();
                             node.setNewCoordinates(json.x, json.y);
                         }else{
@@ -59,16 +60,17 @@ function setUpSocket(webSocket){
                         changeNodeState(json);
                         break;
                     case "connection_available":
-                        connectionsManager.connectionAvailable();
+                        connectionsManager.connectionAvailable(json.to_be_connected);
                         break;
                     case "stop_sersors_rilevation":
                         clearInterval(this.rilevations);
                         break;
+                    case "signaling":
+                        connectionsManager.elaborateMsg(json);
+                        break;
                     default:
-                        console.error("Incorrect message type");
+                        console.error("Incorrect message type", json);
                 }
-			}else if(json.desc || json.candidate){
-                connectionsManager.elaborateMsg(json);
             }else{
                 console.error("Message unrecognized", json);
             } 
@@ -78,25 +80,23 @@ function setUpSocket(webSocket){
 	};
 }
 
-
-
 function changeNodeState(json){
     if(json.id == node.id){
+        let device_name;
         if(json.device_type === "sensor"){
-            node.setValue(json.value, json.sensor_name);
-    
+            device_name = json.sensor_name;
         }else if(json.device_type === "actuator"){
-            node.setValue(json.value, json.actuator_name)
+            device_name = json.actuator_name;
         }else{
             console.error("Unknown mode for change the node's state", json.device_type);
         }
+        node.setValue(json.value, device_name);
     }else{
         console.error("Wrong id", json.id);
     }
 }
 
 function sensorsRilevation(){
-
     if (typeof node !== 'undefined') {
         let sensors = node.getSensors();
         if(sensors.length > 0){

@@ -28,8 +28,9 @@ class TestSystem {
 	final static int STEP_Y = 25;
 	final static int RADIUS = 50;
 	
-	final static int DELAY = 100;
-	final static int LONG_DELAY = 1500;
+	//delay can be diifferent
+	final static int DELAY = 300;
+	final static int LONG_DELAY = 2000;
 	
 	final static String SENSOR = "sensor";
 	final static String ACTUATOR = "actuator";
@@ -46,7 +47,7 @@ class TestSystem {
 		vertx.deployVerticle(server);
 		
 		try {	
-			Thread.sleep(500);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

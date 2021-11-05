@@ -10,7 +10,7 @@ import org.json.JSONObject;
  * Helps in creating of nodes data.
  */
 public class NodeDataGenerator {
-	Iterator<Integer> idGenerator = Stream.iterate(0, i -> i + 1).iterator();
+	private final Iterator<Integer> idGenerator = Stream.iterate(0, i -> i + 1).iterator();
 	private final int max_cols;
 	private final int stepX;
 	private final int stepY;
