@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Demo</title>
+        <link rel="shortcut icon" href="#">
+        <script src="script.js"></script>
+    </head>
+    <body>
+        <ul>
+            <li>
+                <p>Configuration 1</p>
+                <input id="conf1" type="submit">
+                <input id="in_conf1_numNodes" type="number" placeholder="Number of nodes">
+            </li>
+            <li>
+                <p>Move node</p>
+                <input id="move" type="submit">
+                <input id="in_move_id" type="number" placeholder="Node ID">
+                <input id="in_move_x" type="number" placeholder="X">
+                <input id="in_move_y" type="number" placeholder="Y">
+            </li>
+            <li>
+                <p>Disconnect node</p>
+                <input id="disconnect" type="submit">
+                <input id="in_disconnect_id" type="number" placeholder="Node ID">
+            </li>
+            <li>
+                <p>Modify node device state</p>
+                <input id="modify" type="submit">
+                <input id="in_modify_id" type="number" placeholder="Node ID">
+                <input id="in_modify_name" type="text" placeholder="Device name">
+                <input id="in_modify_value" type="text" placeholder="Value">
+            </li>
+            <li>
+                <p>Configuration 2</p>
+                <input id="conf2" type="submit">
+                <input id="in_conf2_numNodes" type="number" placeholder="Number of nodes">
+            </li>
+        </ul>
+        <canvas id="myCanvas" width="500" height="300" style="border:2px solid #cccece;"></canvas>
+    </body>
+</html>
