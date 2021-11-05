@@ -1,83 +1,30 @@
 package strategy.nodes.p2p;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import io.vertx.core.http.ServerWebSocket;
 
 public class WebRTCConnectorImpl implements WebRTCConnector {
 	//Standard messages
-	private final static JSONObject connectionsAvailableMsg = new JSONObject().put("type", "connection_available");
+	private final Iterator<Integer> channelIdGenerator = Stream.iterate(0, i -> i + 1).iterator();
 	
-	private final Map<Integer, ServerWebSocket> clientsWebSocketMap; // this is a reference to map
-	private final Map<Integer, List<Integer>> toBeConnected; // <nodeId, list of nodes id that must be connected to the node> 
-	private final Map<Integer, List<Integer>> senderMap; //<nodeId that receive offer, nodeId that send webRTC offer>
+	private final Map<Integer, ServerWebSocket> clientsWebSocketMap; // a reference to the map, <id, websocket>
 	private final NodeConnectionStrategy nodeConnectionStrategy;
 	
 	public WebRTCConnectorImpl(Map<Integer, ServerWebSocket> clientsWebSocketMap, double nodeRadius) {
 		this.clientsWebSocketMap = clientsWebSocketMap;
-		this.senderMap = new HashMap<>();
-		this.toBeConnected = new HashMap<>();
 		this.nodeConnectionStrategy = new NodeConnectionStrategyImpl(nodeRadius);
 		System.out.println("New radius: " + nodeRadius);
 	}
 
-	@Override
-	public void elaborateSignalingMsg(ServerWebSocket SenderWebSocket, JSONObject json) {
-		int senderId = getIdFromWebSocket(SenderWebSocket);
-		if(json.has("desc")) {
-			
-			String type = json.getJSONObject("desc").get("type").toString();
-			
-			if(type.equals("offer")) { // A client offers a connection
-				//System.out.println("This is offer from " + getIdFromWebSocket(SenderWebSocket));
-				int destinationID = toBeConnected.get(senderId).get(0);
-				clientsWebSocketMap.get(destinationID).writeTextMessage(json.toString());
-				
-				//Make receiver to know who has offered the connection
-				if(!senderMap.containsKey(destinationID)) {
-					senderMap.put(destinationID, new LinkedList<>());
-				}
-				senderMap.get(destinationID).add(senderId);
-				
-			}else if(type.equals("answer")) { //Accepting of connection
-				//System.out.println("This is answer from " + getIdFromWebSocket(SenderWebSocket));
-				clientsWebSocketMap.get(senderMap.get(senderId).get(0)).writeTextMessage(json.toString());
-				senderMap.get(senderId).remove(0);
-			}else {
-				System.out.println("Wrong type of msg");
-			}	
-		}else if(json.has("candidate")) {
-			String candidate = json.getString("candidate");
-			//System.out.println("This is candidate form : "  + getIdFromWebSocket(SenderWebSocket) + "\n" + candidate);
-			
-			//At moment accepts only host candidate
-			if(candidate.contains("host")) {
-				int destinationID = toBeConnected.get(senderId).get(0);
-				System.out.println(" candidate");
-				//route second signaling message 
-				clientsWebSocketMap.get(destinationID).writeTextMessage(json.toString());
-				
-				//Finish with this peer, remove it from list
-				toBeConnected.get(senderId).remove(0);
-				
-				if(!toBeConnected.get(senderId).isEmpty()) {
-					//there are another nodes to be connected
-					//System.out.println("Send available in elaborate");
-					SenderWebSocket.writeTextMessage(getConnectionsAvailableMsg());
-				}else {
-					toBeConnected.remove(senderId);
-				}
-			}
-		}
-	}
 
 	@Override
 	public void elaborateNewNodeState(JSONObject json) {
@@ -102,14 +49,10 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 
 			
 			if(nodesIdToConnect.isPresent()) { // if there are a new nodes that must be connected
-				System.out.println(">>>Nodes ID to connect:" + nodesIdToConnect + " | for node " + id);
-				if(toBeConnected.containsKey(id)){
-					toBeConnected.get(id).addAll(nodesIdToConnect.get());
-				}else {
-					toBeConnected.put(id, new LinkedList<>(nodesIdToConnect.get()));
-					System.out.println("Send available in new nodes to connect");
-					clientsWebSocketMap.get(id).writeTextMessage(getConnectionsAvailableMsg());
-				}
+				System.out.println(">>> Node " + id + " must connect the new nodes: " + nodesIdToConnect);
+				clientsWebSocketMap
+					.get(id)
+					.writeTextMessage(getConnectionsAvailableMsg(nodesIdToConnect.get()));
 			}
 			
 		}else {
@@ -117,27 +60,38 @@ public class WebRTCConnectorImpl implements WebRTCConnector {
 		}
 		
 	}
+
+//	private int getIdFromWebSocket(ServerWebSocket webSocket) {
+//		return clientsWebSocketMap.entrySet()
+//					.stream()
+//					.filter(e -> e.getValue().equals(webSocket))
+//					.findFirst()
+//					.map(m -> m.getKey())
+//					.get();
+//	}
 	
-	private int getIdFromWebSocket(ServerWebSocket webSocket) {
-		return clientsWebSocketMap.entrySet()
-					.stream()
-					.filter(e -> e.getValue().equals(webSocket))
-					.findFirst()
-					.map(m -> m.getKey())
-					.get();
-	}
 	
-	private String getConnectionsAvailableMsg() {
+	/**
+	 * @param nodesToConnect a set of nodes id, that must be connected 
+	 * @return json string where
+	 * 		   - type : "connection_available"
+	 * 		   - to_be_connected : a json array with objects that have two field: "node_id" and "channel_id"
+	 */
+	private String getConnectionsAvailableMsg(Set<Integer> nodesToConnect) {
+		JSONObject connectionsAvailableMsg = new JSONObject().put("type", "connection_available");
+		JSONArray arr = new JSONArray();
+		nodesToConnect.forEach(node_id -> {
+			JSONObject obj = new JSONObject();
+			obj.put("node_id", node_id); //id of node to connect
+			obj.put("channel_id", channelIdGenerator.next()); //unique id of the channel, it can be useful for detecting and avoiding duplicate connections 
+			arr.put(obj);
+		});
+		connectionsAvailableMsg.put("to_be_connected", arr);
 		return connectionsAvailableMsg.toString();
 	}
 
 	@Override
 	public void notifyNodeDisconnection(int id) {
-		senderMap.remove(id);
-		toBeConnected.remove(id);
-		toBeConnected.entrySet().stream()
-			.map(e -> e.getValue())
-			.forEach(list -> list.remove(Integer.valueOf(id)));
 		nodeConnectionStrategy.removeDisconnectedNode(id);
 	}
 

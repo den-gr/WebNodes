@@ -37,7 +37,7 @@ function setUpSocket(){
                 }
                 for(let i = 0; i < json.node_quantity; i++){
                     pages.push(window.open('http://localhost:8081/static/node.html', "_blank"));
-                     await sleep(200);
+                    //await sleep(10);
                 }
                 document.getElementById('number_of_nodes').textContent = pages.length;
             }else if(json.type == "close_all_nodes"){

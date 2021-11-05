@@ -12,12 +12,6 @@ import io.vertx.core.http.ServerWebSocket;
 public interface WebRTCConnector {
 	
 	/**
-	 * @param SenderWebSocket a WebSocket of sender
-	 * @param json a WebRTC signaling message
-	 */
-	void elaborateSignalingMsg(ServerWebSocket SenderWebSocket, JSONObject json);
-	
-	/**
 	 * @param json with state of a node
 	 */
 	void elaborateNewNodeState(JSONObject json);

@@ -1,13 +1,11 @@
 class ChannelStrategy{
-	constructor(observer, node){
-		this.observer = observer;
+	constructor(node){
 		this.node = node;
 	}
 
 	onOpen(channel, id){
         console.log("my channel id in onopen: " + id );
 		console.log("Open a new P2P connection");
-		this.observer.notifyConnectionComplete();
 		channel.send(JSON.stringify({"type": "hello", "id": this.node.id}))
 	}
 
