@@ -109,8 +109,6 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 		
 	}
 
-
-
 	@Override
 	public void closeHandler(ServerWebSocket webSocket) {
 		System.out.println("Client disconnected "+ webSocket.textHandlerID());
@@ -135,7 +133,7 @@ public class WebSocketStrategyImpl implements WebSocketStrategy {
 	}
 	
 	/**
-	 * Route a msg to an client
+	 * Route a message to an client
 	 * @param webSocket of sender
 	 * @param json that must contains an id of client
 	 */

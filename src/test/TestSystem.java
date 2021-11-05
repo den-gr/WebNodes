@@ -28,7 +28,7 @@ class TestSystem {
 	final static int STEP_Y = 25;
 	final static int RADIUS = 50;
 	
-	//delay can be diifferent
+	//Short delay can be source of problem
 	final static int DELAY = 300;
 	final static int LONG_DELAY = 2000;
 	

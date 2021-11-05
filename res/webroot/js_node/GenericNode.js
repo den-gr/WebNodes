@@ -124,8 +124,8 @@ class GenericNode{
         this.xLabel.classList.add('pre-animation');
         this.yLabel.classList.add('pre-animation');
            
-        setTimeout(func, 1000, this.xLabel, x);
-        setTimeout(func, 1000, this.yLabel, y);
+        setTimeout(animation, 1000, this.xLabel, x);
+        setTimeout(animation, 1000, this.yLabel, y);
         this.webrtcManager.sendMsgToConnectedNodes(JSON.stringify({"type": "movementTo", "x": this.x, "y": this.y}));
         this.notifyState();
     }
@@ -150,7 +150,7 @@ class GenericNode{
         }   
     }
 
-    //return true if a point with coordinates (nodeX; nodeY) is outside of radius of node
+    //return true if a point with coordinates (nodeX; nodeY) is outside of node's radius
     isOutOfRadius(nodeX ,nodeY){
         return Math.hypot(this.x-nodeX, this.y-nodeY) > this.radius;
     }
@@ -181,12 +181,6 @@ class Device{
         this.value_name = value_name;
         this.value_type = value_type;
         this.setValue(value_type === "boolean" ? false : 0);
-
-        // this.func = sp => {
-        //     sp.classList.remove('pre-animation')
-        //     sp.innerText = this.value;
-            
-        // }
     }
 
 
@@ -210,13 +204,9 @@ class Device{
         if(this.span){
             this.span.classList.add('pre-animation');
            
-            setTimeout(func, 1000, this.span, this.value);
+            setTimeout(animation, 1000, this.span, this.value);
         }
-       
     }
-
-  
-  
 
     getValue(){
         return this.value;
@@ -254,12 +244,10 @@ class Actuator extends Device{
         super(value_name, value_type);
         this.actuator_name = actuator_name;
         super.setHTML(this.actuator_name, false);
-       
     }
 }
 
-function func(sp, vl){
+function animation(sp, vl){
     sp.classList.remove('pre-animation')
     sp.innerText = vl;
-    
 }

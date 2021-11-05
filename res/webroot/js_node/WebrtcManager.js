@@ -16,7 +16,7 @@ class WebrtcManager{
 
 	//Start a new connection with an peer
 	#addConnection(channel_id, peer_id){
-		this.#peers.set(channel_id, new ConnectedPeer(channel_id, peer_id, this.localNodeId, this.channelStrategy, this.webSocket)); 
+		this.#peers.set(channel_id, new ConnectedPeer(channel_id, peer_id, this.local_node_id, this.channelStrategy, this.webSocket)); 
 		this.#peers.get(channel_id).createNewChannel();
 	}
 
@@ -45,14 +45,14 @@ class WebrtcManager{
 	async elaborateMsg(json){
 		let channel_id = json.channel_id;
 		let peer = this.#peers.has(channel_id) ? this.#peers.get(channel_id) : null;
-		if(this.localNodeId != json.receiver_id){
+		if(this.local_node_id != json.receiver_id){
 			console.error("This node have not to receive this message");
 		}
 		if(json.desc){
 			if (json.desc.type === 'offer') { // receive an handshake offer from another peer
 				this.#peers.set(channel_id, new ConnectedPeer(channel_id, 
 															  json.sender_id, 
-															  this.localNodeId, 
+															  this.local_node_id, 
 															  this.channelStrategy, 
 															  this.webSocket)); 
 				peer = this.#peers.get(channel_id);
@@ -84,8 +84,8 @@ class WebrtcManager{
 								to_be_connected[i].node_id);
 		}
 	}
-	setLocalNodeId(localNodeId){
-		this.localNodeId = localNodeId;
+	setLocalNodeId(local_node_id){
+		this.local_node_id = local_node_id;
 	}
 }
 
@@ -98,17 +98,17 @@ class ConnectedPeer{
 	/**
 	 * @param {number} channel_id unique id of channel between nodes
 	 * @param {number} peer_id id of remote node
-	 * @param {number} localNodeId id of local node 
+	 * @param {number} local_node_id id of local node 
 	 * @param {ChannelStrategy} strategy for handling the received messeges 
 	 * @param {WebSocket} serverWebSocket needed for sending messeges to server
 	 */
-	constructor(channel_id, peer_id, localNodeId, strategy, serverWebSocket){
+	constructor(channel_id, peer_id, local_node_id, strategy, serverWebSocket){
 		this.serverWebSocket = serverWebSocket;
 		this.strategy = strategy;
 
 		this.channel_id = channel_id;
 		this.peer_id = peer_id;
-		this.localNodeId = localNodeId;
+		this.local_node_id = local_node_id;
 		
 		//let configuration = {iceServers: [{urls: ConnectedPeer.STUN_SERVER_URL}]};
 		this.peerConnection =  new RTCPeerConnection(/*configuration*/);
@@ -142,7 +142,7 @@ class ConnectedPeer{
 				await this.peerConnection.setLocalDescription(await this.peerConnection.createOffer());
 				// Send the offer to the other peer.
 				let obj = {type: "signaling", 
-							sender_id: this.localNodeId,
+							sender_id: this.local_node_id,
 							receiver_id: this.peer_id, 
 							desc: this.peerConnection.localDescription, 
 							channel_id: this.#getChannelId()};

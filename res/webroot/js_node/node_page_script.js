@@ -22,18 +22,18 @@ window.onbeforeunload = function(){
 
 function setUpSocket(webSocket){
 	webSocket.onopen = () => {
-            console.log('open');
-            //ask for node setup
-            webSocket.send(JSON.stringify({"type": "node_setup_demand"}));
+        console.log('open');
+        //ask for node setup
+        webSocket.send(JSON.stringify({"type": "node_setup_demand"}));
     }
+
 	webSocket.onclose = () => console.log('close');
 	webSocket.onerror = (error) => console.log('error', error.message);
 
 	webSocket.onmessage = function(msg) {
-		console.log('message: ', msg.data);
+		console.log('New message: ', msg.data);
         try{
 			let json = JSON.parse(msg.data);
-			//console.log('JSON: ', json);
 			if(json.type != null){
                 switch(json.type){
                     case "node_setup":
