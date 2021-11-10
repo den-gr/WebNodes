@@ -17,4 +17,4 @@ For each test:
   1. Open a generator web page `http://localhost:8081/static/index.html` 
   2. Execute test
 
-Too short delay can provocate faling of the tests
+Too short delay could provocate faling of the tests
